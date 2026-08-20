@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Games Nation - Classic Games and Programs">
+    <title>Games Nation</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+        .hero {
+            position: relative;
+            width: 100%;
+            height: 380px;
+            background-image: url('banner.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            overflow: hidden;
+            animation: slowZoom 20s ease-in-out infinite alternate;
+        }
+        @keyframes slowZoom {
+            from { background-size: 100%; }
+            to { background-size: 110%; }
+        }
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.25), rgba(0,0,0,0.8));
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 30px 20px;
+        }
+        .hero-overlay h1 {
+            font-size: 2.3rem;
+            color: #00f0ff;
+            text-shadow: 0 0 20px rgba(0, 240, 255, 0.6);
+            margin-bottom: 6px;
+        }
+        .hero-overlay p { color: #ddd; font-size: 1.1rem; }
+        nav {
+            background: #111;
+            padding: 14px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid #222;
+        }
+        nav .nav-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+        nav a {
+            color: #ccc;
+            text-decoration: none;
+            font-weight: 500;
+            transition: 0.3s;
+            font-size: 0.88rem;
+        }
+        nav a:hover, nav a.active { color: #00f0ff; }
+        .search-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            max-width: 260px;
+            min-width: 150px;
+        }
+        .search-wrap input {
+            width: 100%;
+            padding: 8px 14px;
+            border-radius: 20px;
+            border: 1px solid #333;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .search-wrap input:focus { border-color: #00f0ff; }
+        .search-wrap input::placeholder { color: #666; }
+
+        .admin-gear {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.08);
+            color: rgba(255,255,255,0.18);
+            font-size: 1.15rem;
+            cursor: pointer;
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+            box-shadow: none;
+            opacity: 0.4;
+        }
+        .admin-gear:hover {
+            border-color: rgba(0, 240, 255, 0.4);
+            color: #00f0ff;
+            opacity: 1;
+            transform: rotate(40deg);
+            background: rgba(0,0,0,0.35);
+        }
+        .admin-gear.hidden { display: none !important; }
+        .admin-status-float {
+            position: fixed;
+            bottom: 80px;
+            right: 24px;
+            background: #1a1a2e;
+            border: 1px solid #00f0ff;
+            color: #00f0ff;
+            font-size: 0.75rem;
+            padding: 6px 12px;
+            border-radius: 20px;
+            z-index: 200;
+            display: none;
+        }
+
+        section {
+            max-width: 1000px;
+            margin: 45px auto;
+            padding: 0 20px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s ease;
+        }
+        section.visible { opacity: 1; transform: translateY(0); }
+        h2 {
+            font-size: 1.8rem;
+            color: #00f0ff;
+            margin-bottom: 22px;
+            display: inline-block;
+            border-bottom: 2px solid #00f0ff;
+            padding-bottom: 5px;
+        }
+        h3.sub-heading {
+            font-size: 1.25rem;
+            color: #fff;
+            margin: 28px 0 16px;
+            padding-left: 12px;
+            border-left: 3px solid #00f0ff;
+        }
+        .about-box {
+            background: #161616;
+            padding: 28px;
+            border-radius: 12px;
+            border: 1px solid #222;
+        }
+        .about-box p { margin-bottom: 12px; }
+        .note-box {
+            background: #1a1a2e;
+            border: 1px solid #00f0ff;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+            color: #ddd;
+        }
+        .note-box strong { color: #00f0ff; }
+
+        .announcements-box {
+            background: #1a1a2e;
+            border: 1px solid #00f0ff;
+            border-radius: 12px;
+            padding: 18px 22px;
+            margin-bottom: 30px;
+        }
+        .announcement-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #222;
+            font-size: 0.95rem;
+            color: #ddd;
+        }
+        .announcement-item:last-child { border-bottom: none; }
+        .announcement-item .ann-date {
+            font-size: 0.8rem;
+            color: #666;
+            margin-left: 8px;
+        }
+        .announcement-item a { color: #00f0ff; text-decoration: none; }
+        .announcement-item a:hover { text-decoration: underline; }
+
+        .games {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 22px;
+        }
+        .game-card {
+            background: #161616;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #222;
+            transition: 0.3s;
+        }
+        .game-card:hover {
+            transform: translateY(-6px);
+            border-color: #00f0ff;
+            box-shadow: 0 10px 25px rgba(0, 240, 255, 0.15);
+        }
+        .game-card.hidden-by-search { display: none !important; }
+        .game-info { padding: 18px; }
+        .game-info h3 { color: #fff; margin-bottom: 8px; font-size: 1.15rem; }
+        .game-info p { color: #999; font-size: 0.95rem; margin-bottom: 8px; }
+        .game-size {
+            color: #00f0ff;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        .trailer-box {
+            margin: 12px 0;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #000;
+        }
+        .trailer-box iframe {
+            width: 100%;
+            height: 180px;
+            border: none;
+            display: block;
+        }
+        .game-link {
+            color: #00f0ff;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 22px;
+        }
+        .tool-card {
+            background: #161616;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid #222;
+            transition: 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+        .tool-card:hover {
+            transform: translateY(-6px);
+            border-color: #00f0ff;
+            box-shadow: 0 12px 28px rgba(0, 240, 255, 0.18);
+        }
+        .tool-img-wrap {
+            width: 100%;
+            height: 200px;
+            background: #0d0d0d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .tool-img-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 12px;
+        }
+        .tool-body {
+            padding: 18px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .tool-body h3 {
+            color: #fff;
+            font-size: 1.15rem;
+            margin-bottom: 8px;
+        }
+        .tool-price {
+            color: #00f0ff;
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .tool-price .note {
+            display: block;
+            font-size: 0.8rem;
+            color: #aaa;
+            font-weight: 500;
+            margin-top: 2px;
+        }
+        .tool-desc {
+            color: #999;
+            font-size: 0.9rem;
+            margin-bottom: 14px;
+            flex: 1;
+        }
+        .order-btn {
+            display: inline-block;
+            text-align: center;
+            padding: 11px 18px;
+            background: #25D366;
+            color: #fff;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.95rem;
+            border-radius: 8px;
+            transition: 0.25s;
+        }
+        .order-btn:hover {
+            background: #1da851;
+            transform: translateY(-2px);
+        }
+
+        .contact-box {
+            background: #161616;
+            padding: 32px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #222;
+        }
+        .social-links {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .social-btn {
+            display: inline-block;
+            padding: 10px 22px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: 0.3s;
+        }
+        .whatsapp-btn { background: #25D366; color: white; }
+        .tiktok-btn { background: #010101; color: white; border: 1px solid #333; }
+        .social-btn:hover { transform: translateY(-2px); opacity: 0.9; }
+        footer {
+            background: #050505;
+            text-align: center;
+            padding: 22px;
+            margin-top: 50px;
+            border-top: 1px solid #1a1a1a;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        #admin-panel {
+            display: none;
+            max-width: 950px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        #admin-panel.visible { display: block; }
+        .admin-box {
+            background: #1a1a2e;
+            border: 2px solid #00f0ff;
+            border-radius: 12px;
+            padding: 24px;
+        }
+        .admin-box h2 { margin-bottom: 8px; }
+        .admin-box > p { margin-bottom: 16px; color: #aaa; font-size: 0.95rem; }
+        .admin-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .admin-tab {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid #333;
+            background: #111;
+            color: #ccc;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .admin-tab.active, .admin-tab:hover {
+            border-color: #00f0ff;
+            color: #00f0ff;
+            background: #0a1a1a;
+        }
+        .admin-tab-content { display: none; }
+        .admin-tab-content.active { display: block; }
+        .admin-form label {
+            display: block;
+            margin-bottom: 4px;
+            color: #aaa;
+            font-size: 0.85rem;
+        }
+        .admin-form input, .admin-form select, .admin-form textarea {
+            width: 100%;
+            padding: 10px 12px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            font-size: 0.95rem;
+            outline: none;
+        }
+        .admin-form input:focus, .admin-form select:focus, .admin-form textarea:focus {
+            border-color: #00f0ff;
+        }
+        .admin-form textarea { min-height: 70px; resize: vertical; }
+        .admin-form .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        @media (max-width: 600px) {
+            .admin-form .form-row { grid-template-columns: 1fr; }
+        }
+        .admin-form button[type="submit"] {
+            padding: 10px 22px;
+            border-radius: 8px;
+            border: none;
+            background: #00f0ff;
+            color: #000;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 4px;
+        }
+        .admin-list {
+            margin-top: 18px;
+            border-top: 1px solid #222;
+            padding-top: 14px;
+        }
+        .admin-list h4 {
+            color: #00f0ff;
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+        }
+        .admin-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #1a1a1a;
+            font-size: 0.9rem;
+            gap: 10px;
+        }
+        .admin-list-item span { flex: 1; color: #ccc; }
+        .admin-list-item button {
+            background: #ff4444;
+            color: #fff;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+        .admin-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid #222;
+        }
+        .admin-controls button {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .admin-controls .btn-secondary { background: #333; color: #00f0ff; border: 1px solid #00f0ff; }
+        .admin-controls .btn-danger { background: #ff4444; color: #fff; }
+        #adminMessage {
+            margin-top: 14px;
+            color: #00f0ff;
+            font-size: 0.9rem;
+            min-height: 20px;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.75);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal {
+            background: #161616;
+            border: 1px solid #00f0ff;
+            border-radius: 14px;
+            padding: 28px;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: 0 0 40px rgba(0, 240, 255, 0.2);
+        }
+        .modal h3 { color: #00f0ff; margin-bottom: 18px; font-size: 1.3rem; }
+        .modal label { display: block; margin-bottom: 6px; color: #aaa; font-size: 0.9rem; }
+        .modal input[type="password"] {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            font-size: 1rem;
+            margin-bottom: 16px;
+            outline: none;
+        }
+        .modal input[type="password"]:focus { border-color: #00f0ff; }
+        .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+        .modal-actions button {
+            padding: 10px 18px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+        .modal-actions .btn-primary { background: #00f0ff; color: #000; }
+        .modal-actions .btn-cancel { background: #333; color: #ccc; }
+        .modal-error { color: #ff5555; font-size: 0.9rem; margin-bottom: 12px; min-height: 20px; }
+        .modal-hint { font-size: 0.8rem; color: #666; margin-top: 12px; }
+
+        .no-results {
+            text-align: center;
+            color: #888;
+            padding: 30px;
+            grid-column: 1 / -1;
+            display: none;
+        }
+        .no-results.show { display: block; }
+
+        @media (max-width: 700px) {
+            .hero { height: 260px; }
+            .hero-overlay h1 { font-size: 1.7rem; }
+            nav .nav-inner { flex-direction: column; align-items: stretch; }
+            nav ul { gap: 10px; justify-content: center; }
+            .search-wrap { max-width: 100%; order: -1; }
+            .admin-gear { bottom: 16px; right: 16px; width: 36px; height: 36px; font-size: 1rem; }
+            .tool-img-wrap { height: 170px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="hero">
+        <div class="hero-overlay">
+            <h1>Games Nation</h1>
+            <p>Classic Games & Programs</p>
+        </div>
+    </div>
+
+    <nav>
+        <div class="nav-inner">
+            <ul>
+                <li><a href="#about" class="nav-link">About</a></li>
+                <li><a href="#announcements" class="nav-link">Announcements</a></li>
+                <li><a href="#pc-games" class="nav-link">PC Games</a></li>
+                <li><a href="#mobile-games" class="nav-link">Mobile Games</a></li>
+                <li><a href="#emulators" class="nav-link">Emulators</a></li>
+                <li><a href="#funny-games" class="nav-link">Funny Games</a></li>
+                <li><a href="#game-tools" class="nav-link">Game Tools</a></li>
+                <li><a href="#contact" class="nav-link">Contact</a></li>
+            </ul>
+            <div class="search-wrap">
+                <input type="search" id="searchInput" placeholder="Search games..." aria-label="Search games">
+            </div>
+        </div>
+    </nav>
+
+    <button type="button" class="admin-gear" id="adminLoginBtn" title="Admin">⚙️</button>
+    <div class="admin-status-float" id="adminStatus">Admin mode</div>
+
+    <div id="admin-panel">
+        <div class="admin-box">
+            <h2>⚙️ Admin Control Panel</h2>
+            <p>Only you (admin) can see this. Add / delete announcements, games, Game Tools products and posts. Saved in this browser only.</p>
+
+            <div class="admin-tabs">
+                <button type="button" class="admin-tab active" data-tab="announcements">Announcements</button>
+                <button type="button" class="admin-tab" data-tab="products">Games / Products</button>
+                <button type="button" class="admin-tab" data-tab="tools">Game Tools</button>
+                <button type="button" class="admin-tab" data-tab="posts">Posts / Links</button>
+            </div>
+
+            <div class="admin-tab-content active" id="tab-announcements">
+                <form class="admin-form" id="formAnnouncement">
+                    <label>Announcement text</label>
+                    <textarea id="annText" placeholder="Write the announcement..." required></textarea>
+                    <label>Optional link (URL)</label>
+                    <input type="url" id="annLink" placeholder="https://...">
+                    <button type="submit">Add Announcement</button>
+                </form>
+                <div class="admin-list" id="listAnnouncements"></div>
+            </div>
+
+            <div class="admin-tab-content" id="tab-products">
+                <form class="admin-form" id="formProduct">
+                    <label>Title</label>
+                    <input type="text" id="prodTitle" placeholder="Game / Product name" required>
+                    <label>Description</label>
+                    <textarea id="prodDesc" placeholder="Short description" required></textarea>
+                    <div class="form-row">
+                        <div>
+                            <label>Size / Info</label>
+                            <input type="text" id="prodSize" placeholder="e.g. Approx. 2 GB">
+                        </div>
+                        <div>
+                            <label>Category</label>
+                            <select id="prodCategory">
+                                <option value="pc">PC Games</option>
+                                <option value="mobile">Mobile Games</option>
+                                <option value="emulators">Emulators</option>
+                                <option value="funny">Funny Games</option>
+                            </select>
+                        </div>
+                    </div>
+                    <label>Download / Link URL</label>
+                    <input type="url" id="prodLink" placeholder="https://..." required>
+                    <label>Trailer embed URL (optional)</label>
+                    <input type="url" id="prodTrailer" placeholder="https://www.youtube.com/embed/...">
+                    <button type="submit">Add Game / Product</button>
+                </form>
+                <div class="admin-list" id="listProducts"></div>
+            </div>
+
+            <div class="admin-tab-content" id="tab-tools">
+                <form class="admin-form" id="formTool">
+                    <label>Product name</label>
+                    <input type="text" id="toolTitle" placeholder="e.g. PS5 DualSense Controller" required>
+                    <label>Description</label>
+                    <textarea id="toolDesc" placeholder="Short description" required></textarea>
+                    <div class="form-row">
+                        <div>
+                            <label>Price (text)</label>
+                            <input type="text" id="toolPrice" placeholder="e.g. 200,000 TZS" required>
+                        </div>
+                        <div>
+                            <label>Category</label>
+                            <select id="toolCategory">
+                                <option value="gamepads">Game Pads (Controllers)</option>
+                                <option value="consoles">Gaming Consoles</option>
+                            </select>
+                        </div>
+                    </div>
+                    <label>Extra price note (optional)</label>
+                    <input type="text" id="toolPriceNote" placeholder="e.g. Copy: 150,000 TZS">
+                    <label>Image URL</label>
+                    <input type="url" id="toolImage" placeholder="https://..." required>
+                    <button type="submit">Add Game Tool Product</button>
+                </form>
+                <div class="admin-list" id="listTools"></div>
+            </div>
+
+            <div class="admin-tab-content" id="tab-posts">
+                <form class="admin-form" id="formPost">
+                    <label>Post / Link title</label>
+                    <input type="text" id="postTitle" placeholder="Title" required>
+                    <label>Description or note</label>
+                    <textarea id="postDesc" placeholder="Optional description"></textarea>
+                    <label>URL</label>
+                    <input type="url" id="postLink" placeholder="https://..." required>
+                    <button type="submit">Add Post / Link</button>
+                </form>
+                <div class="admin-list" id="listPosts"></div>
+            </div>
+
+            <div class="admin-controls">
+                <button type="button" class="btn-secondary" id="btnClearSearch">Clear search</button>
+                <button type="button" class="btn-secondary" id="btnShowStats">Show stats</button>
+                <button type="button" class="btn-danger" id="btnLogout">Logout Admin</button>
+            </div>
+            <p id="adminMessage"></p>
+        </div>
+    </div>
+
+    <section id="about">
+        <h2>About</h2>
+        <div class="about-box">
+            <p>Welcome to <strong>Games Nation</strong>.</p>
+            <p>We specialize in <strong>classic games and programs</strong>. From legendary action titles to timeless adventures, we bring you the best classic gaming experience.</p>
+            <p>Whether you're looking for PC classics, mobile favorites, or gaming hardware — Games Nation is your home for nostalgia and quality entertainment.</p>
+        </div>
+    </section>
+
+    <section id="announcements">
+        <h2>Announcements</h2>
+        <div class="announcements-box" id="announcementsContainer">
+            <p style="color:#888;font-size:0.95rem;">No announcements yet.</p>
+        </div>
+    </section>
+
+    <section id="pc-games">
+        <h2>PC Games</h2>
+        <div class="note-box">
+            <strong>Note:</strong> Some game download links are found in our WhatsApp bot. Just click the <strong>Download →</strong> button below each game.
+        </div>
+        <div class="games" id="pc-games-container"></div>
+        <div class="no-results" id="pc-no-results">No PC games match your search.</div>
+    </section>
+
+    <section id="mobile-games">
+        <h2>Games for Mobile Phones</h2>
+        <div class="note-box">
+            <strong>Note:</strong> Some game download links are found in our WhatsApp bot. Just click the <strong>Download →</strong> button below each game.
+        </div>
+        <div class="games" id="mobile-games-container"></div>
+        <div class="no-results" id="mobile-no-results">No mobile games match your search.</div>
+    </section>
+
+    <section id="emulators">
+        <h2>Emulators</h2>
+        <div class="games" id="emulators-container"></div>
+        <div class="no-results" id="emulators-no-results">No emulators match your search.</div>
+    </section>
+
+    <section id="funny-games">
+        <h2>Funny Games</h2>
+        <div class="games" id="funny-games-container"></div>
+        <div class="no-results" id="funny-no-results">No funny games match your search.</div>
+    </section>
+
+    <!-- GAME TOOLS - LAST before Contact -->
+    <section id="game-tools">
+        <h2>Game Tools</h2>
+        <div class="note-box">
+            <strong>Order & Buy:</strong> Click the green button on any item to order via WhatsApp. We deliver!
+        </div>
+
+        <h3 class="sub-heading">🎮 Game Pads (Controllers)</h3>
+        <div class="tools-grid" id="gamepads-container"></div>
+
+        <h3 class="sub-heading">🕹️ Gaming Consoles</h3>
+        <div class="tools-grid" id="consoles-container"></div>
+    </section>
+
+    <section id="posts" style="display:none;">
+        <h2>Posts & Links</h2>
+        <div class="games" id="posts-container"></div>
+    </section>
+
+    <section id="contact">
+        <h2>Contact Us</h2>
+        <div class="contact-box">
+            <p>Have a question or need help? Contact us directly.</p>
+            <div class="social-links">
+                <a href="https://wa.me/message/3GLCGM7QBIYTD1" class="social-btn whatsapp-btn" target="_blank">WhatsApp</a>
+                <a href="https://www.tiktok.com/@babayagah007" class="social-btn tiktok-btn" target="_blank">TikTok @babayagah007</a>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>© 2026 Games Nation. All rights reserved.</p>
+        <p style="margin-top:6px;font-size:0.85rem;color:#555;">Credit: R.killo</p>
+    </footer>
+
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal">
+            <h3>Admin Login</h3>
+            <div class="modal-error" id="loginError"></div>
+            <label for="adminPassword">Password</label>
+            <input type="password" id="adminPassword" placeholder="Enter admin password" autocomplete="current-password">
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" id="cancelLogin">Cancel</button>
+                <button type="button" class="btn-primary" id="submitLogin">Login</button>
+            </div>
+            <p class="modal-hint">2 failed attempts will permanently remove the Admin option on this browser.</p>
+        </div>
+    </div>
+
+    <script>
+        const ADMIN_PASSWORD = "********";
+        const MAX_FAILED_ATTEMPTS = 2;
+        const KEY_FAILS = "gamesnation_admin_fails";
+        const KEY_LOGGED = "gamesnation_admin_logged";
+        const KEY_ANNOUNCEMENTS = "gamesnation_announcements";
+        const KEY_PRODUCTS = "gamesnation_products";
+        const KEY_TOOLS = "gamesnation_tools";
+        const KEY_DELETED_TOOLS = "gamesnation_deleted_tools";
+        const KEY_POSTS = "gamesnation_posts";
+        const WHATSAPP = "https://wa.me/message/3GLCGM7QBIYTD1";
+
+        const defaultTools = [
+            {
+                id: "def-pad-ps5",
+                title: "PS5 DualSense Controller",
+                description: "Official feel DualSense controller for PlayStation 5. Available in original and high-quality copy.",
+                price: "Original: 200,000 TZS",
+                priceNote: "Copy: 150,000 TZS",
+                image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvX5PuLUpxmUMzMtV8jTkNeDa80RbiqsZiJcRqXorJJ8JfXyfcd7Ta3XA&s=10",
+                category: "gamepads"
+            },
+            {
+                id: "def-pad-ps4",
+                title: "PS4 DualShock 4 Controller",
+                description: "Reliable DualShock 4 controller for PlayStation 4. Great condition and responsive buttons.",
+                price: "34,000 TZS",
+                priceNote: "",
+                image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTy27H-WqjDfiVk-2eKAHy3tUcSB8cUbUXEuhx7-MlJ7bhPGHHdOnroZCiv&s=10",
+                category: "gamepads"
+            },
+            {
+                id: "def-pad-ps3",
+                title: "PS3 DualShock 3 Controller",
+                description: "Classic DualShock 3 controller for PlayStation 3. Affordable and fully functional.",
+                price: "15,000 – 20,000 TZS",
+                priceNote: "",
+                image: "https://pictures-tanzania.jijistatic.com/9786936_NjIwLTYxOC1kZDhiMWJjYmY0.webp",
+                category: "gamepads"
+            },
+            {
+                id: "def-pad-pc",
+                title: "PC & Phone Controllers",
+                description: "Wireless gamepad compatible with Android phones, PC and emulators. Perfect for mobile gaming.",
+                price: "35,000 TZS",
+                priceNote: "",
+                image: "https://image.made-in-china.com/2f0j00HezqglKRhQbJ/Wholesale-X3-Gaming-Controller-Phone-Wireless-Joystick-Gamepad-T3-for-Android-Phone.webp",
+                category: "gamepads"
+            },
+            {
+                id: "def-con-ps5",
+                title: "PlayStation 5 (PS5)",
+                description: "Next-gen PlayStation 5 console. Lightning-fast loading, stunning graphics and DualSense support.",
+                price: "1,300,000 TZS",
+                priceNote: "",
+                image: "https://www.samma3a.com/media/catalog/product/cache/53bce20d7ffd193e694a37d8959f20c7/p/s/ps5_de_1_.jpg",
+                category: "consoles"
+            },
+            {
+                id: "def-con-ps4",
+                title: "PlayStation 4 (PS4)",
+                description: "Popular PlayStation 4 console. Huge game library, great performance and excellent value.",
+                price: "600,000 TZS",
+                priceNote: "",
+                image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRW76C2Sy-qurF2CBrRT468ABYaGbJSjGd3fn3omHHLkLE47Xlzd1ExRl3K&s=10",
+                category: "consoles"
+            },
+            {
+                id: "def-con-ps3",
+                title: "PlayStation 3 (PS3)",
+                description: "Classic PlayStation 3 console. Perfect for retro gaming and exclusive titles at a great price.",
+                price: "350,000 TZS",
+                priceNote: "",
+                image: "https://m.media-amazon.com/images/I/81oDJ7NjuzL.jpg",
+                category: "consoles"
+            }
+        ];
+
+        const defaultPcGames = [
+            { title: "Just Cause", description: "Action-adventure game with open world and lots of explosions.", size: "Approx. 4.5 GB", trailer: "https://www.youtube.com/embed/pbhPGQkAS4k", link: WHATSAPP, category: "pc", id: "def-pc-1" },
+            { title: "Resident Evil 5", description: "Classic survival horror with cooperative gameplay.", size: "Approx. 7.5 GB", trailer: "https://www.youtube.com/embed/eSPHL_feg-M", link: WHATSAPP, category: "pc", id: "def-pc-2" },
+            { title: "Grand Theft Auto V", description: "World-famous open world action game.", size: "Approx. 45 GB", trailer: "https://www.youtube.com/embed/hvoD7ehZPcM", link: WHATSAPP, category: "pc", id: "def-pc-3" }
+        ];
+        const defaultMobileGames = [
+            { title: "Mortal Kombat: Shaolin Monks", description: "Action-packed beat 'em up featuring the famous Shaolin warriors.", size: "Approx. 1.2 GB", trailer: "https://www.youtube.com/embed/8cLdvbXPI8g", link: WHATSAPP, category: "mobile", id: "def-m-1" },
+            { title: "007: Quantum of Solace", description: "James Bond action game based on the movie.", size: "Approx. 800 MB", trailer: "https://www.youtube.com/embed/gDpbTIjmmlg", link: WHATSAPP, category: "mobile", id: "def-m-2" },
+            { title: "The Amazing Spider-Man", description: "Open-world superhero action as Spider-Man.", size: "Approx. 1.5 GB", trailer: "https://www.youtube.com/embed/AuwuWokrats", link: WHATSAPP, category: "mobile", id: "def-m-3" },
+            { title: "100 PPSSPP Games", description: "Huge collection of the best PSP games for PPSSPP emulator on Android.", size: "Varies (100+ MB – 2 GB each)", trailer: "https://www.youtube.com/embed/IA-VsrdHmdA", link: "https://ristechy.com/best-ppsspp-games-download-android-psp", category: "mobile", id: "def-m-4" },
+            { title: "FIFA 2026 Offline", description: "Play the latest FIFA experience offline on your Android phone.", size: "Approx. 1.8 GB", trailer: "https://www.youtube.com/embed/TSi0iJYSQ24", link: "https://ristechy.com/fifa-16-mod-fifa-26-apk-offline", category: "mobile", id: "def-m-5" }
+        ];
+        const defaultEmulators = [
+            { title: "Emulators Collection", description: "Download the best emulators for Android and other platforms. Play classic console games on your device.", size: "Varies by emulator", trailer: "https://www.youtube.com/embed/qsPbsoG9YpU", link: "https://romsfun.com/emulators/", category: "emulators", id: "def-e-1" }
+        ];
+        const defaultFunnyGames = [
+            { title: "Funny Games", description: "A collection of fun and entertaining free games you can play online.", size: "Play online – no download needed", trailer: "https://www.youtube.com/embed/E7qMngvwXM4", link: "https://fungamesfree.io/", buttonText: "Play →", category: "funny", id: "def-f-1" }
+        ];
+
+        function loadJSON(key, fallback) {
+            try {
+                const raw = localStorage.getItem(key);
+                return raw ? JSON.parse(raw) : fallback;
+            } catch { return fallback; }
+        }
+        function saveJSON(key, data) {
+            localStorage.setItem(key, JSON.stringify(data));
+        }
+
+        let announcements = loadJSON(KEY_ANNOUNCEMENTS, []);
+        let customProducts = loadJSON(KEY_PRODUCTS, []);
+        let customTools = loadJSON(KEY_TOOLS, []);
+        let deletedDefaultToolIds = loadJSON(KEY_DELETED_TOOLS, []);
+        let posts = loadJSON(KEY_POSTS, []);
+
+        function escapeHtml(str) {
+            if (!str) return "";
+            return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+        }
+        function escapeAttr(str) {
+            if (!str) return "";
+            return String(str).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+        }
+
+        function getActiveTools() {
+            const defaults = defaultTools.filter(t => !deletedDefaultToolIds.includes(t.id));
+            return [...defaults, ...customTools];
+        }
+
+        function renderToolCard(tool) {
+            const card = document.createElement("div");
+            card.className = "tool-card";
+            card.dataset.id = tool.id || "";
+            const noteHtml = tool.priceNote ? `<span class="note">${escapeHtml(tool.priceNote)}</span>` : "";
+            card.innerHTML = `
+                <div class="tool-img-wrap">
+                    <img src="${escapeAttr(tool.image)}" alt="${escapeHtml(tool.title)}" loading="lazy">
+                </div>
+                <div class="tool-body">
+                    <h3>${escapeHtml(tool.title)}</h3>
+                    <div class="tool-price">${escapeHtml(tool.price)}${noteHtml}</div>
+                    <p class="tool-desc">${escapeHtml(tool.description)}</p>
+                    <a href="${WHATSAPP}" class="order-btn" target="_blank" rel="noopener">Order & Buy →</a>
+                </div>`;
+            return card;
+        }
+
+        function renderTools() {
+            const pads = document.getElementById("gamepads-container");
+            const consoles = document.getElementById("consoles-container");
+            pads.innerHTML = "";
+            consoles.innerHTML = "";
+            getActiveTools().forEach(tool => {
+                const card = renderToolCard(tool);
+                if (tool.category === "consoles") consoles.appendChild(card);
+                else pads.appendChild(card);
+            });
+        }
+
+        function renderGameCard(game) {
+            const card = document.createElement("div");
+            card.className = "game-card";
+            card.dataset.title = (game.title || "").toLowerCase();
+            card.dataset.description = (game.description || "").toLowerCase();
+            card.dataset.id = game.id || "";
+
+            let trailerHTML = "";
+            if (game.trailer) {
+                trailerHTML = `<div class="trailer-box"><iframe src="${game.trailer}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
+            }
+            const sizeHTML = game.size ? `<div class="game-size">📦 ${game.size}</div>` : "";
+            const btnText = game.buttonText || "Download →";
+
+            card.innerHTML = `
+                <div class="game-info">
+                    <h3>${escapeHtml(game.title)}</h3>
+                    <p>${escapeHtml(game.description)}</p>
+                    ${sizeHTML}
+                    ${trailerHTML}
+                    <a href="${escapeAttr(game.link)}" class="game-link" target="_blank" rel="noopener">${btnText}</a>
+                </div>`;
+            return card;
+        }
+
+        function getAllProducts() {
+            return [
+                ...defaultPcGames,
+                ...defaultMobileGames,
+                ...defaultEmulators,
+                ...defaultFunnyGames,
+                ...customProducts
+            ];
+        }
+
+        function renderAllGames() {
+            const containers = {
+                pc: document.getElementById("pc-games-container"),
+                mobile: document.getElementById("mobile-games-container"),
+                emulators: document.getElementById("emulators-container"),
+                funny: document.getElementById("funny-games-container")
+            };
+            Object.values(containers).forEach(c => c.innerHTML = "");
+            getAllProducts().forEach(game => {
+                const cat = game.category || "pc";
+                const container = containers[cat];
+                if (container) container.appendChild(renderGameCard(game));
+            });
+            performSearch();
+        }
+
+        function renderAnnouncements() {
+            const box = document.getElementById("announcementsContainer");
+            if (!announcements.length) {
+                box.innerHTML = `<p style="color:#888;font-size:0.95rem;">No announcements yet.</p>`;
+                return;
+            }
+            box.innerHTML = announcements.map(a => {
+                const link = a.link ? ` <a href="${escapeAttr(a.link)}" target="_blank" rel="noopener">Read more →</a>` : "";
+                const date = a.date ? `<span class="ann-date">${escapeHtml(a.date)}</span>` : "";
+                return `<div class="announcement-item">${escapeHtml(a.text)}${link}${date}</div>`;
+            }).join("");
+        }
+
+        function renderPostsSection() {
+            const section = document.getElementById("posts");
+            const container = document.getElementById("posts-container");
+            if (!posts.length) {
+                section.style.display = "none";
+                return;
+            }
+            section.style.display = "";
+            container.innerHTML = "";
+            posts.forEach(p => {
+                const card = document.createElement("div");
+                card.className = "game-card";
+                card.innerHTML = `
+                    <div class="game-info">
+                        <h3>${escapeHtml(p.title)}</h3>
+                        <p>${escapeHtml(p.description || "")}</p>
+                        <a href="${escapeAttr(p.link)}" class="game-link" target="_blank" rel="noopener">Open →</a>
+                    </div>`;
+                container.appendChild(card);
+            });
+        }
+
+        function renderAdminLists() {
+            const annList = document.getElementById("listAnnouncements");
+            annList.innerHTML = "<h4>Current announcements</h4>" + (announcements.length ? announcements.map((a, i) =>
+                `<div class="admin-list-item"><span>${escapeHtml(a.text.substring(0, 60))}${a.text.length > 60 ? "…" : ""}</span><button type="button" data-type="ann" data-i="${i}">Delete</button></div>`
+            ).join("") : "<p style='color:#666;font-size:0.9rem;'>None yet.</p>");
+
+            const prodList = document.getElementById("listProducts");
+            prodList.innerHTML = "<h4>Custom games you added</h4>" + (customProducts.length ? customProducts.map((p, i) =>
+                `<div class="admin-list-item"><span>${escapeHtml(p.title)} <small style="color:#666">(${p.category})</small></span><button type="button" data-type="prod" data-i="${i}">Delete</button></div>`
+            ).join("") : "<p style='color:#666;font-size:0.9rem;'>None yet.</p>");
+
+            const toolsList = document.getElementById("listTools");
+            const activeTools = getActiveTools();
+            toolsList.innerHTML = "<h4>All Game Tools (default + custom)</h4>" + (activeTools.length ? activeTools.map((t) => {
+                const isDefault = t.id && String(t.id).startsWith("def-");
+                return `<div class="admin-list-item">
+                    <span>${escapeHtml(t.title)} <small style="color:#666">(${t.category}${isDefault ? " • default" : ""})</small></span>
+                    <button type="button" data-type="tool" data-id="${escapeAttr(t.id)}" data-default="${isDefault}">Delete</button>
+                </div>`;
+            }).join("") : "<p style='color:#666;font-size:0.9rem;'>None.</p>");
+
+            const postList = document.getElementById("listPosts");
+            postList.innerHTML = "<h4>Current posts / links</h4>" + (posts.length ? posts.map((p, i) =>
+                `<div class="admin-list-item"><span>${escapeHtml(p.title)}</span><button type="button" data-type="post" data-i="${i}">Delete</button></div>`
+            ).join("") : "<p style='color:#666;font-size:0.9rem;'>None yet.</p>");
+
+            document.querySelectorAll(".admin-list-item button").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const type = btn.dataset.type;
+                    if (type === "ann") {
+                        const i = parseInt(btn.dataset.i, 10);
+                        announcements.splice(i, 1);
+                        saveJSON(KEY_ANNOUNCEMENTS, announcements);
+                        renderAnnouncements();
+                    } else if (type === "prod") {
+                        const i = parseInt(btn.dataset.i, 10);
+                        customProducts.splice(i, 1);
+                        saveJSON(KEY_PRODUCTS, customProducts);
+                        renderAllGames();
+                    } else if (type === "tool") {
+                        const id = btn.dataset.id;
+                        const isDefault = btn.dataset.default === "true";
+                        if (isDefault) {
+                            if (!deletedDefaultToolIds.includes(id)) {
+                                deletedDefaultToolIds.push(id);
+                                saveJSON(KEY_DELETED_TOOLS, deletedDefaultToolIds);
+                            }
+                        } else {
+                            customTools = customTools.filter(t => t.id !== id);
+                            saveJSON(KEY_TOOLS, customTools);
+                        }
+                        renderTools();
+                    } else if (type === "post") {
+                        const i = parseInt(btn.dataset.i, 10);
+                        posts.splice(i, 1);
+                        saveJSON(KEY_POSTS, posts);
+                        renderPostsSection();
+                    }
+                    renderAdminLists();
+                    setAdminMsg("Item deleted.");
+                });
+            });
+        }
+
+        function setAdminMsg(msg) {
+            document.getElementById("adminMessage").textContent = msg || "";
+        }
+
+        const searchInput = document.getElementById("searchInput");
+        function performSearch() {
+            const query = (searchInput.value || "").trim().toLowerCase();
+            const map = [
+                { id: "pc-games-container", no: "pc-no-results" },
+                { id: "mobile-games-container", no: "mobile-no-results" },
+                { id: "emulators-container", no: "emulators-no-results" },
+                { id: "funny-games-container", no: "funny-no-results" }
+            ];
+            map.forEach(({ id, no }) => {
+                const container = document.getElementById(id);
+                const cards = container.querySelectorAll(".game-card");
+                let visible = 0;
+                cards.forEach(card => {
+                    const t = card.dataset.title || "";
+                    const d = card.dataset.description || "";
+                    const match = !query || t.includes(query) || d.includes(query);
+                    card.classList.toggle("hidden-by-search", !match);
+                    if (match) visible++;
+                });
+                const noEl = document.getElementById(no);
+                if (noEl) noEl.classList.toggle("show", !!query && visible === 0);
+            });
+        }
+        searchInput.addEventListener("input", performSearch);
+
+        const adminLoginBtn = document.getElementById("adminLoginBtn");
+        const adminStatus = document.getElementById("adminStatus");
+        const adminPanel = document.getElementById("admin-panel");
+        const loginModal = document.getElementById("loginModal");
+        const adminPasswordInput = document.getElementById("adminPassword");
+        const loginError = document.getElementById("loginError");
+
+        function getFails() { return parseInt(localStorage.getItem(KEY_FAILS) || "0", 10); }
+        function setFails(n) { localStorage.setItem(KEY_FAILS, String(n)); }
+        function isLocked() { return getFails() >= MAX_FAILED_ATTEMPTS; }
+        function isLoggedIn() { return localStorage.getItem(KEY_LOGGED) === "true"; }
+        function setLoggedIn(v) {
+            if (v) localStorage.setItem(KEY_LOGGED, "true");
+            else localStorage.removeItem(KEY_LOGGED);
+        }
+
+        function updateAdminUI() {
+            if (isLocked()) {
+                adminLoginBtn.classList.add("hidden");
+                adminStatus.style.display = "none";
+                adminPanel.classList.remove("visible");
+                return;
+            }
+            if (isLoggedIn()) {
+                adminLoginBtn.classList.add("hidden");
+                adminStatus.style.display = "block";
+                adminPanel.classList.add("visible");
+                renderAdminLists();
+            } else {
+                adminLoginBtn.classList.remove("hidden");
+                adminStatus.style.display = "none";
+                adminPanel.classList.remove("visible");
+            }
+        }
+
+        function openLogin() {
+            if (isLocked()) return;
+            loginError.textContent = "";
+            adminPasswordInput.value = "";
+            loginModal.classList.add("show");
+            setTimeout(() => adminPasswordInput.focus(), 50);
+        }
+        function closeLogin() {
+            loginModal.classList.remove("show");
+            adminPasswordInput.value = "";
+            loginError.textContent = "";
+        }
+        function attemptLogin() {
+            if (adminPasswordInput.value === ADMIN_PASSWORD) {
+                setLoggedIn(true);
+                setFails(0);
+                closeLogin();
+                updateAdminUI();
+                setAdminMsg("Welcome, Admin. Full control over all sections.");
+            } else {
+                const fails = getFails() + 1;
+                setFails(fails);
+                const left = MAX_FAILED_ATTEMPTS - fails;
+                if (fails >= MAX_FAILED_ATTEMPTS) {
+                    loginError.textContent = "Too many failed attempts. Admin option removed on this browser.";
+                    setTimeout(() => { closeLogin(); updateAdminUI(); }, 1800);
+                } else {
+                    loginError.textContent = `Wrong password. ${left} attempt${left === 1 ? "" : "s"} left.`;
+                    adminPasswordInput.value = "";
+                    adminPasswordInput.focus();
+                }
+            }
+        }
+
+        adminLoginBtn.addEventListener("click", openLogin);
+        document.getElementById("cancelLogin").addEventListener("click", closeLogin);
+        document.getElementById("submitLogin").addEventListener("click", attemptLogin);
+        adminPasswordInput.addEventListener("keydown", e => { if (e.key === "Enter") attemptLogin(); });
+        loginModal.addEventListener("click", e => { if (e.target === loginModal) closeLogin(); });
+
+        document.getElementById("btnLogout").addEventListener("click", () => {
+            setLoggedIn(false);
+            updateAdminUI();
+            setAdminMsg("");
+        });
+        document.getElementById("btnClearSearch").addEventListener("click", () => {
+            searchInput.value = "";
+            performSearch();
+            setAdminMsg("Search cleared.");
+        });
+        document.getElementById("btnShowStats").addEventListener("click", () => {
+            setAdminMsg(`Stats: ${getAllProducts().length} games, ${getActiveTools().length} tools, ${announcements.length} announcements, ${posts.length} posts.`);
+        });
+
+        document.querySelectorAll(".admin-tab").forEach(tab => {
+            tab.addEventListener("click", () => {
+                document.querySelectorAll(".admin-tab").forEach(t => t.classList.remove("active"));
+                document.querySelectorAll(".admin-tab-content").forEach(c => c.classList.remove("active"));
+                tab.classList.add("active");
+                document.getElementById("tab-" + tab.dataset.tab).classList.add("active");
+            });
+        });
+
+        document.getElementById("formAnnouncement").addEventListener("submit", e => {
+            e.preventDefault();
+            const text = document.getElementById("annText").value.trim();
+            const link = document.getElementById("annLink").value.trim();
+            if (!text) return;
+            announcements.unshift({ text, link: link || null, date: new Date().toLocaleDateString() });
+            saveJSON(KEY_ANNOUNCEMENTS, announcements);
+            document.getElementById("annText").value = "";
+            document.getElementById("annLink").value = "";
+            renderAnnouncements();
+            renderAdminLists();
+            setAdminMsg("Announcement added.");
+        });
+
+        document.getElementById("formProduct").addEventListener("submit", e => {
+            e.preventDefault();
+            const title = document.getElementById("prodTitle").value.trim();
+            const description = document.getElementById("prodDesc").value.trim();
+            const size = document.getElementById("prodSize").value.trim();
+            const category = document.getElementById("prodCategory").value;
+            const link = document.getElementById("prodLink").value.trim();
+            const trailer = document.getElementById("prodTrailer").value.trim();
+            if (!title || !description || !link) return;
+            customProducts.unshift({
+                id: "custom-" + Date.now(),
+                title, description, size, category, link,
+                trailer: trailer || null
+            });
+            saveJSON(KEY_PRODUCTS, customProducts);
+            document.getElementById("formProduct").reset();
+            renderAllGames();
+            renderAdminLists();
+            setAdminMsg("Game / product added.");
+        });
+
+        document.getElementById("formTool").addEventListener("submit", e => {
+            e.preventDefault();
+            const title = document.getElementById("toolTitle").value.trim();
+            const description = document.getElementById("toolDesc").value.trim();
+            const price = document.getElementById("toolPrice").value.trim();
+            const priceNote = document.getElementById("toolPriceNote").value.trim();
+            const category = document.getElementById("toolCategory").value;
+            const image = document.getElementById("toolImage").value.trim();
+            if (!title || !description || !price || !image) return;
+            customTools.unshift({
+                id: "tool-" + Date.now(),
+                title, description, price, priceNote, category, image
+            });
+            saveJSON(KEY_TOOLS, customTools);
+            document.getElementById("formTool").reset();
+            renderTools();
+            renderAdminLists();
+            setAdminMsg("Game Tool product added to " + (category === "gamepads" ? "Game Pads" : "Consoles") + ".");
+        });
+
+        document.getElementById("formPost").addEventListener("submit", e => {
+            e.preventDefault();
+            const title = document.getElementById("postTitle").value.trim();
+            const description = document.getElementById("postDesc").value.trim();
+            const link = document.getElementById("postLink").value.trim();
+            if (!title || !link) return;
+            posts.unshift({ title, description, link, id: "post-" + Date.now() });
+            saveJSON(KEY_POSTS, posts);
+            document.getElementById("formPost").reset();
+            renderPostsSection();
+            renderAdminLists();
+            setAdminMsg("Post / link added.");
+        });
+
+        renderAllGames();
+        renderTools();
+        renderAnnouncements();
+        renderPostsSection();
+        updateAdminUI();
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener("click", function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute("href"));
+                if (target) target.scrollIntoView({ behavior: "smooth" });
+            });
+        });
+        const sections = document.querySelectorAll("section");
+        const navLinks = document.querySelectorAll(".nav-link");
+        window.addEventListener("scroll", () => {
+            let current = "";
+            sections.forEach(section => {
+                if (scrollY >= section.offsetTop - 120) current = section.getAttribute("id");
+            });
+            navLinks.forEach(link => {
+                link.classList.remove("active");
+                if (link.getAttribute("href") === "#" + current) link.classList.add("active");
+            });
+        });
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add("visible");
+            });
+        }, { threshold: 0.15 });
+        sections.forEach(section => observer.observe(section));
+    </script>
+</body>
+</html>
