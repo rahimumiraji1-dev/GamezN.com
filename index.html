@@ -1,0 +1,2085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Games Nation - Classic Games and Programs">
+    <title>Games Nation</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+        .hero {
+            position: relative;
+            width: 100%;
+            height: 380px;
+            background-image: url('banner.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            overflow: hidden;
+            animation: slowZoom 20s ease-in-out infinite alternate;
+        }
+        @keyframes slowZoom {
+            from { background-size: 100%; }
+            to { background-size: 110%; }
+        }
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.25), rgba(0,0,0,0.8));
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 30px 20px;
+        }
+        .hero-overlay h1 {
+            font-size: 2.3rem;
+            color: #00f0ff;
+            text-shadow: 0 0 20px rgba(0, 240, 255, 0.6);
+            margin-bottom: 6px;
+        }
+        .hero-overlay p { color: #ddd; font-size: 1.1rem; }
+        nav {
+            background: #111;
+            padding: 14px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid #222;
+        }
+        nav .nav-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+        nav a {
+            color: #ccc;
+            text-decoration: none;
+            font-weight: 500;
+            transition: 0.3s;
+            font-size: 0.88rem;
+        }
+        nav a:hover, nav a.active { color: #00f0ff; }
+        .search-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            max-width: 260px;
+            min-width: 150px;
+        }
+        .search-wrap input {
+            width: 100%;
+            padding: 8px 14px;
+            border-radius: 20px;
+            border: 1px solid #333;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .search-wrap input:focus { border-color: #00f0ff; }
+        .search-wrap input::placeholder { color: #666; }
+
+        .bot-float {
+            position: fixed;
+            bottom: 80px;
+            right: 24px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #00f0ff, #0088aa);
+            border: 2px solid #fff;
+            font-size: 1.6rem;
+            cursor: grab;
+            z-index: 210;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 24px rgba(0, 240, 255, 0.35);
+            transition: box-shadow 0.2s, transform 0.15s;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
+            line-height: 1;
+        }
+        .bot-float:hover { transform: scale(1.08); box-shadow: 0 8px 28px rgba(0, 240, 255, 0.5); }
+        .bot-float.dragging {
+            cursor: grabbing;
+            transform: scale(1.12);
+            box-shadow: 0 12px 36px rgba(0, 240, 255, 0.55);
+            transition: none;
+        }
+        .bot-float.hidden-chat { display: none !important; }
+
+        #chat-page {
+            display: none;
+            max-width: 720px;
+            margin: 24px auto 40px;
+            padding: 0 16px;
+            min-height: 70vh;
+        }
+        #chat-page.visible { display: block; }
+        #main-site.hidden { display: none; }
+        .chat-back {
+            color: #888;
+            font-size: 0.9rem;
+            cursor: pointer;
+            margin-bottom: 12px;
+            display: inline-block;
+        }
+        .chat-back:hover { color: #00f0ff; }
+        .chat-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #222;
+        }
+        .chat-header .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #00f0ff, #0088aa);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        .chat-header h2 { color: #00f0ff; font-size: 1.2rem; margin: 0; }
+        .chat-header p { color: #888; font-size: 0.85rem; margin: 0; }
+        .chat-box {
+            background: #161616;
+            border: 1px solid #222;
+            border-radius: 14px;
+            height: 420px;
+            overflow-y: auto;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        .cmsg {
+            max-width: 88%;
+            margin-bottom: 12px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+        .cmsg.bot {
+            background: #1a1a2e;
+            border: 1px solid #222;
+            color: #e0e0e0;
+            border-bottom-left-radius: 4px;
+            margin-right: auto;
+        }
+        .cmsg.user {
+            background: #003844;
+            border: 1px solid #00f0ff44;
+            color: #fff;
+            border-bottom-right-radius: 4px;
+            margin-left: auto;
+        }
+        .cmsg .who {
+            font-size: 0.72rem;
+            opacity: 0.7;
+            margin-bottom: 3px;
+            font-weight: 600;
+            color: #00f0ff;
+        }
+        .cmsg.user .who { color: #7eefff; }
+        .cmsg a.wa-link {
+            color: #25D366;
+            font-weight: 600;
+            word-break: break-all;
+        }
+        .chat-input-row {
+            display: flex;
+            gap: 10px;
+        }
+        .chat-input-row input {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 24px;
+            border: 1px solid #333;
+            background: #111;
+            color: #e0e0e0;
+            font-size: 0.95rem;
+            outline: none;
+        }
+        .chat-input-row input:focus { border-color: #00f0ff; }
+        .chat-input-row button {
+            padding: 12px 20px;
+            border-radius: 24px;
+            border: none;
+            background: #00f0ff;
+            color: #000;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .chat-input-row button:hover { opacity: 0.9; }
+
+        .admin-gear {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.08);
+            color: rgba(255,255,255,0.18);
+            font-size: 1.15rem;
+            cursor: pointer;
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+            box-shadow: none;
+            opacity: 0.4;
+        }
+        .admin-gear:hover {
+            border-color: rgba(0, 240, 255, 0.4);
+            color: #00f0ff;
+            opacity: 1;
+            transform: rotate(40deg);
+            background: rgba(0,0,0,0.35);
+        }
+        .admin-gear.hidden { display: none !important; }
+        .admin-status-float {
+            position: fixed;
+            bottom: 80px;
+            right: 24px;
+            background: #1a1a2e;
+            border: 1px solid #00f0ff;
+            color: #00f0ff;
+            font-size: 0.75rem;
+            padding: 6px 12px;
+            border-radius: 20px;
+            z-index: 200;
+            display: none;
+        }
+
+        section {
+            max-width: 1000px;
+            margin: 45px auto;
+            padding: 0 20px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s ease;
+        }
+        section.visible { opacity: 1; transform: translateY(0); }
+        h2 {
+            font-size: 1.8rem;
+            color: #00f0ff;
+            margin-bottom: 22px;
+            display: inline-block;
+            border-bottom: 2px solid #00f0ff;
+            padding-bottom: 5px;
+        }
+        h3.sub-heading {
+            font-size: 1.25rem;
+            color: #fff;
+            margin: 28px 0 16px;
+            padding-left: 12px;
+            border-left: 3px solid #00f0ff;
+        }
+        .about-box {
+            background: #161616;
+            padding: 28px;
+            border-radius: 12px;
+            border: 1px solid #222;
+        }
+        .about-box p { margin-bottom: 12px; }
+        .note-box {
+            background: #1a1a2e;
+            border: 1px solid #00f0ff;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+            color: #ddd;
+        }
+        .note-box strong { color: #00f0ff; }
+
+        .announcements-box {
+            background: #1a1a2e;
+            border: 1px solid #00f0ff;
+            border-radius: 12px;
+            padding: 18px 22px;
+            margin-bottom: 30px;
+        }
+        .announcement-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #222;
+            font-size: 0.95rem;
+            color: #ddd;
+        }
+        .announcement-item:last-child { border-bottom: none; }
+        .announcement-item .ann-date {
+            font-size: 0.8rem;
+            color: #666;
+            margin-left: 8px;
+        }
+        .announcement-item a { color: #00f0ff; text-decoration: none; }
+        .announcement-item a:hover { text-decoration: underline; }
+
+        .games {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 22px;
+        }
+        .game-card {
+            background: #161616;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #222;
+            transition: 0.3s;
+        }
+        .game-card:hover {
+            transform: translateY(-6px);
+            border-color: #00f0ff;
+            box-shadow: 0 10px 25px rgba(0, 240, 255, 0.15);
+        }
+        .game-card.hidden-by-search { display: none !important; }
+        .game-info { padding: 18px; }
+        .game-info h3 { color: #fff; margin-bottom: 8px; font-size: 1.15rem; }
+        .game-info p { color: #999; font-size: 0.95rem; margin-bottom: 8px; }
+        .game-size {
+            color: #00f0ff;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        .trailer-box {
+            margin: 12px 0;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #000;
+        }
+        .trailer-box iframe {
+            width: 100%;
+            height: 180px;
+            border: none;
+            display: block;
+        }
+        .game-link {
+            color: #00f0ff;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 22px;
+        }
+        .tool-card {
+            background: #161616;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid #222;
+            transition: 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+        .tool-card:hover {
+            transform: translateY(-6px);
+            border-color: #00f0ff;
+            box-shadow: 0 12px 28px rgba(0, 240, 255, 0.18);
+        }
+        .tool-img-wrap {
+            width: 100%;
+            height: 200px;
+            background: #0d0d0d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .tool-img-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 12px;
+        }
+        .tool-body {
+            padding: 18px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .tool-body h3 {
+            color: #fff;
+            font-size: 1.15rem;
+            margin-bottom: 8px;
+        }
+        .tool-price {
+            color: #00f0ff;
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .tool-price .note {
+            display: block;
+            font-size: 0.8rem;
+            color: #aaa;
+            font-weight: 500;
+            margin-top: 2px;
+        }
+        .tool-desc {
+            color: #999;
+            font-size: 0.9rem;
+            margin-bottom: 14px;
+            flex: 1;
+        }
+        .order-btn {
+            display: inline-block;
+            text-align: center;
+            padding: 11px 18px;
+            background: #25D366;
+            color: #fff;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.95rem;
+            border-radius: 8px;
+            transition: 0.25s;
+        }
+        .order-btn:hover {
+            background: #1da851;
+            transform: translateY(-2px);
+        }
+
+        .contact-box {
+            background: #161616;
+            padding: 32px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #222;
+        }
+        .social-links {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .social-btn {
+            display: inline-block;
+            padding: 10px 22px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: 0.3s;
+        }
+        .whatsapp-btn { background: #25D366; color: white; }
+        .tiktok-btn { background: #010101; color: white; border: 1px solid #333; }
+        .social-btn:hover { transform: translateY(-2px); opacity: 0.9; }
+        footer {
+            background: #050505;
+            text-align: center;
+            padding: 22px;
+            margin-top: 50px;
+            border-top: 1px solid #1a1a1a;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        #admin-panel {
+            display: none;
+            max-width: 950px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        #admin-panel.visible { display: block; }
+        .admin-box {
+            background: #1a1a2e;
+            border: 2px solid #00f0ff;
+            border-radius: 12px;
+            padding: 24px;
+        }
+        .admin-box h2 { margin-bottom: 8px; }
+        .admin-box > p { margin-bottom: 16px; color: #aaa; font-size: 0.95rem; }
+        .admin-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .admin-tab {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid #333;
+            background: #111;
+            color: #ccc;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .admin-tab.active, .admin-tab:hover {
+            border-color: #00f0ff;
+            color: #00f0ff;
+            background: #0a1a1a;
+        }
+        .admin-tab-content { display: none; }
+        .admin-tab-content.active { display: block; }
+        .admin-form label {
+            display: block;
+            margin-bottom: 4px;
+            color: #aaa;
+            font-size: 0.85rem;
+        }
+        .admin-form input, .admin-form select, .admin-form textarea {
+            width: 100%;
+            padding: 10px 12px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            font-size: 0.95rem;
+            outline: none;
+        }
+        .admin-form input:focus, .admin-form select:focus, .admin-form textarea:focus {
+            border-color: #00f0ff;
+        }
+        .admin-form textarea { min-height: 70px; resize: vertical; }
+        .admin-form .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        @media (max-width: 600px) {
+            .admin-form .form-row { grid-template-columns: 1fr; }
+        }
+        .admin-form button[type="submit"] {
+            padding: 10px 22px;
+            border-radius: 8px;
+            border: none;
+            background: #00f0ff;
+            color: #000;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 4px;
+        }
+        .admin-list {
+            margin-top: 18px;
+            border-top: 1px solid #222;
+            padding-top: 14px;
+        }
+        .admin-list h4 {
+            color: #00f0ff;
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+        }
+        .admin-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #1a1a1a;
+            font-size: 0.9rem;
+            gap: 10px;
+        }
+        .admin-list-item span { flex: 1; color: #ccc; }
+        .admin-list-item button {
+            background: #ff4444;
+            color: #fff;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+        .admin-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid #222;
+        }
+        .admin-controls button {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .admin-controls .btn-secondary { background: #333; color: #00f0ff; border: 1px solid #00f0ff; }
+        .admin-controls .btn-danger { background: #ff4444; color: #fff; }
+        #adminMessage {
+            margin-top: 14px;
+            color: #00f0ff;
+            font-size: 0.9rem;
+            min-height: 20px;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.75);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal {
+            background: #161616;
+            border: 1px solid #00f0ff;
+            border-radius: 14px;
+            padding: 28px;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: 0 0 40px rgba(0, 240, 255, 0.2);
+        }
+        .modal h3 { color: #00f0ff; margin-bottom: 18px; font-size: 1.3rem; }
+        .modal label { display: block; margin-bottom: 6px; color: #aaa; font-size: 0.9rem; }
+        .modal input[type="password"] {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            font-size: 1rem;
+            margin-bottom: 16px;
+            outline: none;
+        }
+        .modal input[type="password"]:focus { border-color: #00f0ff; }
+        .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+        .modal-actions button {
+            padding: 10px 18px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+        .modal-actions .btn-primary { background: #00f0ff; color: #000; }
+        .modal-actions .btn-cancel { background: #333; color: #ccc; }
+        .modal-error { color: #ff5555; font-size: 0.9rem; margin-bottom: 12px; min-height: 20px; }
+        .modal-hint { font-size: 0.8rem; color: #666; margin-top: 12px; }
+
+        .no-results {
+            text-align: center;
+            color: #888;
+            padding: 30px;
+            grid-column: 1 / -1;
+            display: none;
+        }
+        .no-results.show { display: block; }
+
+        @media (max-width: 700px) {
+            .hero { height: 260px; }
+            .hero-overlay h1 { font-size: 1.7rem; }
+            nav .nav-inner { flex-direction: column; align-items: stretch; }
+            nav ul { gap: 10px; justify-content: center; }
+            .search-wrap { max-width: 100%; order: -1; }
+            .admin-gear { bottom: 16px; right: 16px; width: 36px; height: 36px; font-size: 1rem; }
+            .tool-img-wrap { height: 170px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="hero">
+        <div class="hero-overlay">
+            <h1>Games Nation</h1>
+            <p>Classic Games & Programs</p>
+        </div>
+    </div>
+
+    <nav>
+        <div class="nav-inner">
+            <ul>
+                <li><a href="#about" class="nav-link">About</a></li>
+                <li><a href="#announcements" class="nav-link">Announcements</a></li>
+                <li><a href="#pc-games" class="nav-link">PC Games</a></li>
+                <li><a href="#mobile-games" class="nav-link">Mobile Games</a></li>
+                <li><a href="#emulators" class="nav-link">Emulators</a></li>
+                <li><a href="#funny-games" class="nav-link">Funny Games</a></li>
+                <li><a href="#game-tools" class="nav-link">Game Tools</a></li>
+                <li><a href="#" class="nav-link" id="navCoach">Game Coach 🎮</a></li>
+                <li><a href="#contact" class="nav-link">Contact</a></li>
+            </ul>
+            <div class="search-wrap">
+                <input type="search" id="searchInput" placeholder="Search games..." aria-label="Search games">
+            </div>
+        </div>
+    </nav>
+
+    <button type="button" class="bot-float" id="botFloatBtn" title="Game Coach – drag to move, tap to chat" aria-label="Open Game Coach">🎮</button>
+    <button type="button" class="admin-gear" id="adminLoginBtn" title="Admin">⚙️</button>
+    <div class="admin-status-float" id="adminStatus">Admin mode</div>
+
+    <div id="admin-panel">
+        <div class="admin-box">
+            <h2>⚙️ Admin Control Panel</h2>
+            <p>Only you (admin) can see this. Add / delete announcements, games, Game Tools products and posts. Saved in this browser only.</p>
+
+            <div class="admin-tabs">
+                <button type="button" class="admin-tab active" data-tab="announcements">Announcements</button>
+                <button type="button" class="admin-tab" data-tab="products">Games / Products</button>
+                <button type="button" class="admin-tab" data-tab="tools">Game Tools</button>
+                <button type="button" class="admin-tab" data-tab="posts">Posts / Links</button>
+                <button type="button" class="admin-tab" data-tab="bot">Bot Coach</button>
+                <button type="button" class="admin-tab" data-tab="views">Views / IPs</button>
+            </div>
+
+            <div class="admin-tab-content active" id="tab-announcements">
+                <form class="admin-form" id="formAnnouncement">
+                    <label>Announcement text</label>
+                    <textarea id="annText" placeholder="Write the announcement..." required></textarea>
+                    <label>Optional link (URL)</label>
+                    <input type="url" id="annLink" placeholder="https://...">
+                    <button type="submit">Add Announcement</button>
+                </form>
+                <div class="admin-list" id="listAnnouncements"></div>
+            </div>
+
+            <div class="admin-tab-content" id="tab-products">
+                <form class="admin-form" id="formProduct">
+                    <label>Title</label>
+                    <input type="text" id="prodTitle" placeholder="Game / Product name" required>
+                    <label>Description</label>
+                    <textarea id="prodDesc" placeholder="Short description" required></textarea>
+                    <div class="form-row">
+                        <div>
+                            <label>Size / Info</label>
+                            <input type="text" id="prodSize" placeholder="e.g. Approx. 2 GB">
+                        </div>
+                        <div>
+                            <label>Category</label>
+                            <select id="prodCategory">
+                                <option value="pc">PC Games</option>
+                                <option value="mobile">Mobile Games</option>
+                                <option value="emulators">Emulators</option>
+                                <option value="funny">Funny Games</option>
+                            </select>
+                        </div>
+                    </div>
+                    <label>Download / Link URL</label>
+                    <input type="url" id="prodLink" placeholder="https://..." required>
+                    <label>Trailer embed URL (optional)</label>
+                    <input type="url" id="prodTrailer" placeholder="https://www.youtube.com/embed/...">
+                    <button type="submit">Add Game / Product</button>
+                </form>
+                <div class="admin-list" id="listProducts"></div>
+            </div>
+
+            <div class="admin-tab-content" id="tab-tools">
+                <form class="admin-form" id="formTool">
+                    <label>Product name</label>
+                    <input type="text" id="toolTitle" placeholder="e.g. PS5 DualSense Controller" required>
+                    <label>Description</label>
+                    <textarea id="toolDesc" placeholder="Short description" required></textarea>
+                    <div class="form-row">
+                        <div>
+                            <label>Price (text)</label>
+                            <input type="text" id="toolPrice" placeholder="e.g. 200,000 TZS" required>
+                        </div>
+                        <div>
+                            <label>Category</label>
+                            <select id="toolCategory">
+                                <option value="gamepads">Game Pads (Controllers)</option>
+                                <option value="consoles">Gaming Consoles</option>
+                            </select>
+                        </div>
+                    </div>
+                    <label>Extra price note (optional)</label>
+                    <input type="text" id="toolPriceNote" placeholder="e.g. Copy: 150,000 TZS">
+                    <label>Image URL</label>
+                    <input type="url" id="toolImage" placeholder="https://..." required>
+                    <button type="submit">Add Game Tool Product</button>
+                </form>
+                <div class="admin-list" id="listTools"></div>
+            </div>
+
+            <div class="admin-tab-content" id="tab-posts">
+                <form class="admin-form" id="formPost">
+                    <label>Post / Link title</label>
+                    <input type="text" id="postTitle" placeholder="Title" required>
+                    <label>Description or note</label>
+                    <textarea id="postDesc" placeholder="Optional description"></textarea>
+                    <label>URL</label>
+                    <input type="url" id="postLink" placeholder="https://..." required>
+                    <button type="submit">Add Post / Link</button>
+                </form>
+                <div class="admin-list" id="listPosts"></div>
+            </div>
+
+            <div class="admin-tab-content" id="tab-bot">
+                <form class="admin-form" id="formBot">
+                    <label>Bot display name</label>
+                    <input type="text" id="botName" placeholder="Coach Nova" maxlength="40">
+                    <label>Welcome message (shown when chat opens)</label>
+                    <textarea id="botWelcome" placeholder="Hey! I'm Coach Nova..." style="min-height:90px;"></textarea>
+                    <label>Extra instructions / FAQ (optional). One tip per line. Format: keyword: answer</label>
+                    <textarea id="botInstructions" placeholder="Example:&#10;lag: Use 5GHz Wi-Fi and close background apps.&#10;dualsense: Original DualSense is in Game Tools — order via WhatsApp." style="min-height:140px;"></textarea>
+                    <p style="color:#888;font-size:0.85rem;margin-bottom:12px;">These instructions guide Coach replies and custom keyword answers. Product promo + eFootball knowledge stay built-in.</p>
+                    <button type="submit">Save Bot Settings</button>
+                </form>
+            </div>
+
+            <div class="admin-tab-content" id="tab-views">
+                <p style="color:#aaa;font-size:0.9rem;margin-bottom:12px;">Visitors detected by IP address (this browser stores the log). Click refresh to update.</p>
+                <button type="button" class="btn-secondary" id="btnRefreshViews" style="padding:8px 16px;border-radius:8px;border:1px solid #00f0ff;background:#333;color:#00f0ff;font-weight:600;cursor:pointer;margin-bottom:14px;">Refresh Views</button>
+                <button type="button" class="btn-danger" id="btnClearViews" style="padding:8px 16px;border-radius:8px;border:none;background:#ff4444;color:#fff;font-weight:600;cursor:pointer;margin-bottom:14px;margin-left:8px;">Clear Log</button>
+                <div id="viewsStats" style="color:#ccc;font-size:0.95rem;margin-bottom:12px;"></div>
+                <div class="admin-list" id="listViews"></div>
+            </div>
+
+            <div class="admin-controls">
+                <button type="button" class="btn-secondary" id="btnClearSearch">Clear search</button>
+                <button type="button" class="btn-secondary" id="btnShowStats">Show stats</button>
+                <button type="button" class="btn-danger" id="btnLogout">Logout Admin</button>
+            </div>
+            <p id="adminMessage"></p>
+        </div>
+    </div>
+
+    <section id="about">
+        <h2>About</h2>
+        <div class="about-box">
+            <p>Welcome to <strong>Games Nation</strong>.</p>
+            <p>We specialize in <strong>classic games and programs</strong>. From legendary action titles to timeless adventures, we bring you the best classic gaming experience.</p>
+            <p>Whether you're looking for PC classics, mobile favorites, or gaming hardware — Games Nation is your home for nostalgia and quality entertainment.</p>
+        </div>
+    </section>
+
+    <section id="announcements">
+        <h2>Announcements</h2>
+        <div class="announcements-box" id="announcementsContainer">
+            <p style="color:#888;font-size:0.95rem;">No announcements yet.</p>
+        </div>
+    </section>
+
+    <section id="pc-games">
+        <h2>PC Games</h2>
+        <div class="note-box">
+            <strong>Note:</strong> Some game download links are found in our WhatsApp bot. Just click the <strong>Download →</strong> button below each game.
+        </div>
+        <div class="games" id="pc-games-container"></div>
+        <div class="no-results" id="pc-no-results">No PC games match your search.</div>
+    </section>
+
+    <section id="mobile-games">
+        <h2>Games for Mobile Phones</h2>
+        <div class="note-box">
+            <strong>Note:</strong> Some game download links are found in our WhatsApp bot. Just click the <strong>Download →</strong> button below each game.
+        </div>
+        <div class="games" id="mobile-games-container"></div>
+        <div class="no-results" id="mobile-no-results">No mobile games match your search.</div>
+    </section>
+
+    <section id="emulators">
+        <h2>Emulators</h2>
+        <div class="games" id="emulators-container"></div>
+        <div class="no-results" id="emulators-no-results">No emulators match your search.</div>
+    </section>
+
+    <section id="funny-games">
+        <h2>Funny Games</h2>
+        <div class="games" id="funny-games-container"></div>
+        <div class="no-results" id="funny-no-results">No funny games match your search.</div>
+    </section>
+
+    <!-- GAME TOOLS - LAST before Contact -->
+    <section id="game-tools">
+        <h2>Game Tools</h2>
+        <div class="note-box">
+            <strong>Order & Buy:</strong> Click the green button on any item to order via WhatsApp. We deliver!
+        </div>
+
+        <h3 class="sub-heading">🎮 Game Pads (Controllers)</h3>
+        <div class="tools-grid" id="gamepads-container"></div>
+
+        <h3 class="sub-heading">🕹️ Gaming Consoles</h3>
+        <div class="tools-grid" id="consoles-container"></div>
+    </section>
+
+    <section id="posts" style="display:none;">
+        <h2>Posts & Links</h2>
+        <div class="games" id="posts-container"></div>
+    </section>
+
+    <section id="contact">
+        <h2>Contact Us</h2>
+        <div class="contact-box">
+            <p>Have a question or need help? Contact us directly.</p>
+            <div class="social-links">
+                <a href="https://wa.me/message/3GLCGM7QBIYTD1" class="social-btn whatsapp-btn" target="_blank">WhatsApp</a>
+                <a href="https://www.tiktok.com/@babayagah007" class="social-btn tiktok-btn" target="_blank">TikTok @babayagah007</a>
+            </div>
+        </div>
+    </section>
+
+    <div id="chat-page">
+        <span class="chat-back" id="backFromChat">← Back to Games Nation</span>
+        <div class="chat-header">
+            <div class="avatar">🎮</div>
+            <div>
+                <h2>Coach Nova – Game Coach</h2>
+                <p>eFootball · gameplay · tools · order help</p>
+            </div>
+        </div>
+        <div class="chat-box" id="chatBox"></div>
+        <div class="chat-input-row">
+            <input type="text" id="chatInput" placeholder="Ask about eFootball, games, pads, consoles..." autocomplete="off">
+            <button type="button" id="sendChat">Send</button>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2026 Games Nation. All rights reserved.</p>
+        <p style="margin-top:6px;font-size:0.85rem;color:#555;">Credit: R.killo</p>
+    </footer>
+
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal">
+            <h3>Admin Login</h3>
+            <div class="modal-error" id="loginError"></div>
+            <label for="adminPassword">Password</label>
+            <input type="password" id="adminPassword" placeholder="Enter admin password" autocomplete="current-password">
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" id="cancelLogin">Cancel</button>
+                <button type="button" class="btn-primary" id="submitLogin">Login</button>
+            </div>
+            <p class="modal-hint">2 failed attempts will permanently remove the Admin option on this browser.</p>
+        </div>
+    </div>
+
+    <script>
+        const ADMIN_PASSWORD = "********";
+        const MAX_FAILED_ATTEMPTS = 2;
+        const KEY_FAILS = "gamesnation_admin_fails";
+        const KEY_LOGGED = "gamesnation_admin_logged";
+        const KEY_ANNOUNCEMENTS = "gamesnation_announcements";
+        const KEY_PRODUCTS = "gamesnation_products";
+        const KEY_TOOLS = "gamesnation_tools";
+        const KEY_DELETED_TOOLS = "gamesnation_deleted_tools";
+        const KEY_POSTS = "gamesnation_posts";
+        const KEY_VIEWS = "gamesnation_views";
+        const KEY_TOOL_OVERRIDES = "gamesnation_tool_overrides";
+        const KEY_DELETED_PRODUCTS = "gamesnation_deleted_products";
+        const KEY_PRODUCT_OVERRIDES = "gamesnation_product_overrides";
+        const KEY_BOT = "gamesnation_bot";
+        const WHATSAPP = "https://wa.me/message/3GLCGM7QBIYTD1";
+
+        const defaultBot = {
+            name: "Coach Nova",
+            welcome: "Hey! I'm Coach Nova 🎮 — Games Nation coach & product guide.\n\nAsk me about:\n• eFootball tactics, defending, finishing, ranked tips\n• PC/Mobile games we list (GTA, RE5, Spider-Man, FIFA offline…)\n• Pads & consoles with real prices\n• How to order on WhatsApp\n\nWhat do you want to improve or buy?",
+            instructions: "You are Coach Nova. Accurate eFootball coach + Games Nation middleman. Only promote products that exist on this site. Be concise. After purchase intent, give price + WhatsApp. FAQ lines: keyword: answer"
+        };
+        let botSettings = (function() {
+            try {
+                const r = localStorage.getItem(KEY_BOT);
+                return r ? { ...defaultBot, ...JSON.parse(r) } : { ...defaultBot };
+            } catch (_) { return { ...defaultBot }; }
+        })();
+        function saveBotSettings() {
+            try { localStorage.setItem(KEY_BOT, JSON.stringify(botSettings)); } catch (_) {}
+        }
+
+        const defaultTools = [
+            {
+                id: "def-pad-ps5",
+                title: "PS5 DualSense Controller",
+                description: "Official feel DualSense controller for PlayStation 5. Available in original and high-quality copy.",
+                price: "Original: 200,000 TZS",
+                priceNote: "Copy: 150,000 TZS",
+                image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvX5PuLUpxmUMzMtV8jTkNeDa80RbiqsZiJcRqXorJJ8JfXyfcd7Ta3XA&s=10",
+                category: "gamepads"
+            },
+            {
+                id: "def-pad-ps4",
+                title: "PS4 DualShock 4 Controller",
+                description: "Reliable DualShock 4 controller for PlayStation 4. Great condition and responsive buttons.",
+                price: "34,000 TZS",
+                priceNote: "",
+                image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTy27H-WqjDfiVk-2eKAHy3tUcSB8cUbUXEuhx7-MlJ7bhPGHHdOnroZCiv&s=10",
+                category: "gamepads"
+            },
+            {
+                id: "def-pad-ps3",
+                title: "PS3 DualShock 3 Controller",
+                description: "Classic DualShock 3 controller for PlayStation 3. Affordable and fully functional.",
+                price: "15,000 – 20,000 TZS",
+                priceNote: "",
+                image: "https://pictures-tanzania.jijistatic.com/9786936_NjIwLTYxOC1kZDhiMWJjYmY0.webp",
+                category: "gamepads"
+            },
+            {
+                id: "def-pad-pc",
+                title: "PC & Phone Controllers",
+                description: "Wireless gamepad compatible with Android phones, PC and emulators. Perfect for mobile gaming.",
+                price: "35,000 TZS",
+                priceNote: "",
+                image: "https://image.made-in-china.com/2f0j00HezqglKRhQbJ/Wholesale-X3-Gaming-Controller-Phone-Wireless-Joystick-Gamepad-T3-for-Android-Phone.webp",
+                category: "gamepads"
+            },
+            {
+                id: "def-con-ps5",
+                title: "PlayStation 5 (PS5)",
+                description: "Next-gen PlayStation 5 console. Lightning-fast loading, stunning graphics and DualSense support.",
+                price: "1,300,000 TZS",
+                priceNote: "",
+                image: "https://www.samma3a.com/media/catalog/product/cache/53bce20d7ffd193e694a37d8959f20c7/p/s/ps5_de_1_.jpg",
+                category: "consoles"
+            },
+            {
+                id: "def-con-ps4",
+                title: "PlayStation 4 (PS4)",
+                description: "Popular PlayStation 4 console. Huge game library, great performance and excellent value.",
+                price: "500,000 – 600,000 TZS",
+                priceNote: "",
+                image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRW76C2Sy-qurF2CBrRT468ABYaGbJSjGd3fn3omHHLkLE47Xlzd1ExRl3K&s=10",
+                category: "consoles"
+            },
+            {
+                id: "def-con-ps3",
+                title: "PlayStation 3 (PS3)",
+                description: "Classic PlayStation 3 console. Perfect for retro gaming and exclusive titles at a great price.",
+                price: "350,000 TZS",
+                priceNote: "",
+                image: "https://m.media-amazon.com/images/I/81oDJ7NjuzL.jpg",
+                category: "consoles"
+            }
+        ];
+
+        const defaultPcGames = [
+            { title: "Just Cause", description: "Action-adventure game with open world and lots of explosions.", size: "Approx. 4.5 GB", trailer: "https://www.youtube.com/embed/pbhPGQkAS4k", link: WHATSAPP, category: "pc", id: "def-pc-1" },
+            { title: "Resident Evil 5", description: "Classic survival horror with cooperative gameplay.", size: "Approx. 7.5 GB", trailer: "https://www.youtube.com/embed/eSPHL_feg-M", link: WHATSAPP, category: "pc", id: "def-pc-2" },
+            { title: "Grand Theft Auto V", description: "World-famous open world action game.", size: "Approx. 45 GB", trailer: "https://www.youtube.com/embed/hvoD7ehZPcM", link: WHATSAPP, category: "pc", id: "def-pc-3" }
+        ];
+        const defaultMobileGames = [
+            { title: "Mortal Kombat: Shaolin Monks", description: "Action-packed beat 'em up featuring the famous Shaolin warriors.", size: "Approx. 1.2 GB", trailer: "https://www.youtube.com/embed/8cLdvbXPI8g", link: WHATSAPP, category: "mobile", id: "def-m-1" },
+            { title: "007: Quantum of Solace", description: "James Bond action game based on the movie.", size: "Approx. 800 MB", trailer: "https://www.youtube.com/embed/gDpbTIjmmlg", link: WHATSAPP, category: "mobile", id: "def-m-2" },
+            { title: "The Amazing Spider-Man", description: "Open-world superhero action as Spider-Man.", size: "Approx. 1.5 GB", trailer: "https://www.youtube.com/embed/AuwuWokrats", link: WHATSAPP, category: "mobile", id: "def-m-3" },
+            { title: "100 PPSSPP Games", description: "Huge collection of the best PSP games for PPSSPP emulator on Android.", size: "Varies (100+ MB – 2 GB each)", trailer: "https://www.youtube.com/embed/IA-VsrdHmdA", link: "https://ristechy.com/best-ppsspp-games-download-android-psp", category: "mobile", id: "def-m-4" },
+            { title: "FIFA 2026 Offline", description: "Play the latest FIFA experience offline on your Android phone.", size: "Approx. 1.8 GB", trailer: "https://www.youtube.com/embed/TSi0iJYSQ24", link: "https://ristechy.com/fifa-16-mod-fifa-26-apk-offline", category: "mobile", id: "def-m-5" }
+        ];
+        const defaultEmulators = [
+            { title: "Emulators Collection", description: "Download the best emulators for Android and other platforms. Play classic console games on your device.", size: "Varies by emulator", trailer: "https://www.youtube.com/embed/qsPbsoG9YpU", link: "https://romsfun.com/emulators/", category: "emulators", id: "def-e-1" }
+        ];
+        const defaultFunnyGames = [
+            { title: "Funny Games", description: "A collection of fun and entertaining free games you can play online.", size: "Play online – no download needed", trailer: "https://www.youtube.com/embed/E7qMngvwXM4", link: "https://fungamesfree.io/", buttonText: "Play →", category: "funny", id: "def-f-1" }
+        ];
+
+        function loadJSON(key, fallback) {
+            try {
+                const raw = localStorage.getItem(key);
+                return raw ? JSON.parse(raw) : fallback;
+            } catch { return fallback; }
+        }
+        function saveJSON(key, data) {
+            localStorage.setItem(key, JSON.stringify(data));
+        }
+
+        let announcements = loadJSON(KEY_ANNOUNCEMENTS, []);
+        let customProducts = loadJSON(KEY_PRODUCTS, []);
+        let customTools = loadJSON(KEY_TOOLS, []);
+        let deletedDefaultToolIds = loadJSON(KEY_DELETED_TOOLS, []);
+        let toolOverrides = loadJSON(KEY_TOOL_OVERRIDES, {}); // { id: { price, priceNote, title, description } }
+        let deletedDefaultProductIds = loadJSON(KEY_DELETED_PRODUCTS, []);
+        let productOverrides = loadJSON(KEY_PRODUCT_OVERRIDES, {}); // { id: { title, description, size, link, trailer, category, buttonText } }
+        let posts = loadJSON(KEY_POSTS, []);
+        let viewsLog = loadJSON(KEY_VIEWS, []); // [{ ip, time, count }]
+
+        function escapeHtml(str) {
+            if (!str) return "";
+            return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+        }
+        function escapeAttr(str) {
+            if (!str) return "";
+            return String(str).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+        }
+
+        function getActiveTools() {
+            const defaults = defaultTools
+                .filter(t => !deletedDefaultToolIds.includes(t.id))
+                .map(t => {
+                    const o = toolOverrides[t.id] || {};
+                    return { ...t, ...o };
+                });
+            return [...defaults, ...customTools];
+        }
+
+        function renderToolCard(tool) {
+            const card = document.createElement("div");
+            card.className = "tool-card";
+            card.dataset.id = tool.id || "";
+            const noteHtml = tool.priceNote ? `<span class="note">${escapeHtml(tool.priceNote)}</span>` : "";
+            card.innerHTML = `
+                <div class="tool-img-wrap">
+                    <img src="${escapeAttr(tool.image)}" alt="${escapeHtml(tool.title)}" loading="lazy">
+                </div>
+                <div class="tool-body">
+                    <h3>${escapeHtml(tool.title)}</h3>
+                    <div class="tool-price">${escapeHtml(tool.price)}${noteHtml}</div>
+                    <p class="tool-desc">${escapeHtml(tool.description)}</p>
+                    <a href="${WHATSAPP}" class="order-btn" target="_blank" rel="noopener">Order & Buy →</a>
+                </div>`;
+            return card;
+        }
+
+        function renderTools() {
+            const pads = document.getElementById("gamepads-container");
+            const consoles = document.getElementById("consoles-container");
+            pads.innerHTML = "";
+            consoles.innerHTML = "";
+            getActiveTools().forEach(tool => {
+                const card = renderToolCard(tool);
+                if (tool.category === "consoles") consoles.appendChild(card);
+                else pads.appendChild(card);
+            });
+        }
+
+        function renderGameCard(game) {
+            const card = document.createElement("div");
+            card.className = "game-card";
+            card.dataset.title = (game.title || "").toLowerCase();
+            card.dataset.description = (game.description || "").toLowerCase();
+            card.dataset.id = game.id || "";
+
+            let trailerHTML = "";
+            if (game.trailer) {
+                trailerHTML = `<div class="trailer-box"><iframe src="${game.trailer}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
+            }
+            const sizeHTML = game.size ? `<div class="game-size">📦 ${game.size}</div>` : "";
+            const btnText = game.buttonText || "Download →";
+
+            card.innerHTML = `
+                <div class="game-info">
+                    <h3>${escapeHtml(game.title)}</h3>
+                    <p>${escapeHtml(game.description)}</p>
+                    ${sizeHTML}
+                    ${trailerHTML}
+                    <a href="${escapeAttr(game.link)}" class="game-link" target="_blank" rel="noopener">${btnText}</a>
+                </div>`;
+            return card;
+        }
+
+        function getDefaultGamesPool() {
+            return [...defaultPcGames, ...defaultMobileGames, ...defaultEmulators, ...defaultFunnyGames];
+        }
+
+        function getAllProducts() {
+            const defaults = getDefaultGamesPool()
+                .filter(g => !deletedDefaultProductIds.includes(g.id))
+                .map(g => {
+                    const o = productOverrides[g.id] || {};
+                    return { ...g, ...o };
+                });
+            return [...defaults, ...customProducts];
+        }
+
+        function renderAllGames() {
+            const containers = {
+                pc: document.getElementById("pc-games-container"),
+                mobile: document.getElementById("mobile-games-container"),
+                emulators: document.getElementById("emulators-container"),
+                funny: document.getElementById("funny-games-container")
+            };
+            Object.values(containers).forEach(c => c.innerHTML = "");
+            getAllProducts().forEach(game => {
+                const cat = game.category || "pc";
+                const container = containers[cat];
+                if (container) container.appendChild(renderGameCard(game));
+            });
+            performSearch();
+        }
+
+        function renderAnnouncements() {
+            const box = document.getElementById("announcementsContainer");
+            if (!announcements.length) {
+                box.innerHTML = `<p style="color:#888;font-size:0.95rem;">No announcements yet.</p>`;
+                return;
+            }
+            box.innerHTML = announcements.map(a => {
+                const link = a.link ? ` <a href="${escapeAttr(a.link)}" target="_blank" rel="noopener">Read more →</a>` : "";
+                const date = a.date ? `<span class="ann-date">${escapeHtml(a.date)}</span>` : "";
+                return `<div class="announcement-item">${escapeHtml(a.text)}${link}${date}</div>`;
+            }).join("");
+        }
+
+        function renderPostsSection() {
+            const section = document.getElementById("posts");
+            const container = document.getElementById("posts-container");
+            if (!posts.length) {
+                section.style.display = "none";
+                return;
+            }
+            section.style.display = "";
+            container.innerHTML = "";
+            posts.forEach(p => {
+                const card = document.createElement("div");
+                card.className = "game-card";
+                card.innerHTML = `
+                    <div class="game-info">
+                        <h3>${escapeHtml(p.title)}</h3>
+                        <p>${escapeHtml(p.description || "")}</p>
+                        <a href="${escapeAttr(p.link)}" class="game-link" target="_blank" rel="noopener">Open →</a>
+                    </div>`;
+                container.appendChild(card);
+            });
+        }
+
+        function renderAdminLists() {
+            const annList = document.getElementById("listAnnouncements");
+            annList.innerHTML = "<h4>Current announcements</h4>" + (announcements.length ? announcements.map((a, i) =>
+                `<div class="admin-list-item"><span>${escapeHtml(a.text.substring(0, 50))}${a.text.length > 50 ? "…" : ""}</span>
+                <button type="button" data-action="edit" data-type="ann" data-i="${i}" style="background:#00f0ff;color:#000;margin-right:6px;">Edit</button>
+                <button type="button" data-action="del" data-type="ann" data-i="${i}">Delete</button></div>`
+            ).join("") : "<p style='color:#666;font-size:0.9rem;'>None yet.</p>");
+
+            const prodList = document.getElementById("listProducts");
+            const allGamesAdmin = getAllProducts();
+            const catLabel = { pc: "PC", mobile: "Mobile", emulators: "Emulators", funny: "Funny" };
+            prodList.innerHTML = "<h4>All games (PC, Mobile, Emulators, Funny) — Edit / Delete</h4>" + (allGamesAdmin.length ? allGamesAdmin.map((p) => {
+                const isDefault = p.id && String(p.id).startsWith("def-");
+                const isCustom = !isDefault;
+                const customIndex = isCustom ? customProducts.findIndex(c => c.id === p.id) : -1;
+                return `<div class="admin-list-item">
+                    <span>${escapeHtml(p.title)} <small style="color:#666">(${catLabel[p.category] || p.category || "?"})</small>
+                    ${isDefault ? '<small style="color:#555"> default</small>' : '<small style="color:#555"> custom</small>'}</span>
+                    <button type="button" data-action="edit" data-type="prod" data-id="${escapeAttr(p.id || "")}" data-default="${isDefault}" data-i="${customIndex}" style="background:#00f0ff;color:#000;margin-right:6px;">Edit</button>
+                    <button type="button" data-action="del" data-type="prod" data-id="${escapeAttr(p.id || "")}" data-default="${isDefault}" data-i="${customIndex}">Delete</button>
+                </div>`;
+            }).join("") : "<p style='color:#666;font-size:0.9rem;'>None yet.</p>");
+
+            const toolsList = document.getElementById("listTools");
+            const activeTools = getActiveTools();
+            toolsList.innerHTML = "<h4>All Game Tools — Edit / Delete</h4>" + (activeTools.length ? activeTools.map((t) => {
+                const isDefault = t.id && String(t.id).startsWith("def-");
+                return `<div class="admin-list-item">
+                    <span>${escapeHtml(t.title)} — <strong style="color:#00f0ff">${escapeHtml(t.price)}</strong>
+                    ${t.priceNote ? `<small style="color:#888"> / ${escapeHtml(t.priceNote)}</small>` : ""}
+                    <small style="color:#666"> (${t.category})</small></span>
+                    <button type="button" data-action="edit" data-type="tool" data-id="${escapeAttr(t.id)}" data-default="${isDefault}" style="background:#00f0ff;color:#000;margin-right:6px;">Edit</button>
+                    <button type="button" data-action="del" data-type="tool" data-id="${escapeAttr(t.id)}" data-default="${isDefault}">Delete</button>
+                </div>`;
+            }).join("") : "<p style='color:#666;font-size:0.9rem;'>None.</p>");
+
+            const postList = document.getElementById("listPosts");
+            postList.innerHTML = "<h4>Current posts / links</h4>" + (posts.length ? posts.map((p, i) =>
+                `<div class="admin-list-item"><span>${escapeHtml(p.title)}</span>
+                <button type="button" data-action="edit" data-type="post" data-i="${i}" style="background:#00f0ff;color:#000;margin-right:6px;">Edit</button>
+                <button type="button" data-action="del" data-type="post" data-i="${i}">Delete</button></div>`
+            ).join("") : "<p style='color:#666;font-size:0.9rem;'>None yet.</p>");
+
+            renderViewsList();
+
+            document.querySelectorAll(".admin-list-item button").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const action = btn.dataset.action;
+                    const type = btn.dataset.type;
+
+                    if (action === "del") {
+                        if (type === "ann") {
+                            announcements.splice(parseInt(btn.dataset.i, 10), 1);
+                            saveJSON(KEY_ANNOUNCEMENTS, announcements);
+                            renderAnnouncements();
+                        } else if (type === "prod") {
+                            const id = btn.dataset.id;
+                            const isDefault = btn.dataset.default === "true";
+                            if (isDefault && id) {
+                                if (!deletedDefaultProductIds.includes(id)) {
+                                    deletedDefaultProductIds.push(id);
+                                    saveJSON(KEY_DELETED_PRODUCTS, deletedDefaultProductIds);
+                                }
+                                if (productOverrides[id]) {
+                                    delete productOverrides[id];
+                                    saveJSON(KEY_PRODUCT_OVERRIDES, productOverrides);
+                                }
+                            } else {
+                                const i = parseInt(btn.dataset.i, 10);
+                                if (!isNaN(i) && i >= 0) {
+                                    customProducts.splice(i, 1);
+                                } else if (id) {
+                                    customProducts = customProducts.filter(c => c.id !== id);
+                                }
+                                saveJSON(KEY_PRODUCTS, customProducts);
+                            }
+                            renderAllGames();
+                        } else if (type === "tool") {
+                            const id = btn.dataset.id;
+                            if (btn.dataset.default === "true") {
+                                if (!deletedDefaultToolIds.includes(id)) {
+                                    deletedDefaultToolIds.push(id);
+                                    saveJSON(KEY_DELETED_TOOLS, deletedDefaultToolIds);
+                                }
+                            } else {
+                                customTools = customTools.filter(t => t.id !== id);
+                                saveJSON(KEY_TOOLS, customTools);
+                            }
+                            renderTools();
+                        } else if (type === "post") {
+                            posts.splice(parseInt(btn.dataset.i, 10), 1);
+                            saveJSON(KEY_POSTS, posts);
+                            renderPostsSection();
+                        }
+                        renderAdminLists();
+                        setAdminMsg("Item deleted.");
+                        return;
+                    }
+
+                    // EDIT
+                    if (type === "ann") {
+                        const i = parseInt(btn.dataset.i, 10);
+                        const a = announcements[i];
+                        const text = prompt("Edit announcement text:", a.text);
+                        if (text === null) return;
+                        const link = prompt("Edit link (leave empty for none):", a.link || "");
+                        if (link === null) return;
+                        announcements[i] = { ...a, text: text.trim() || a.text, link: link.trim() || null };
+                        saveJSON(KEY_ANNOUNCEMENTS, announcements);
+                        renderAnnouncements();
+                        setAdminMsg("Announcement updated.");
+                    } else if (type === "prod") {
+                        const id = btn.dataset.id;
+                        const isDefault = btn.dataset.default === "true";
+                        let p;
+                        if (isDefault) {
+                            p = getAllProducts().find(g => g.id === id) || {};
+                        } else {
+                            const i = parseInt(btn.dataset.i, 10);
+                            p = (!isNaN(i) && i >= 0) ? customProducts[i] : (customProducts.find(c => c.id === id) || {});
+                        }
+                        const title = prompt("Edit title:", p.title || "");
+                        if (title === null) return;
+                        const description = prompt("Edit description:", p.description || "");
+                        if (description === null) return;
+                        const size = prompt("Edit size/info:", p.size || "");
+                        if (size === null) return;
+                        const link = prompt("Edit download / order link:", p.link || "");
+                        if (link === null) return;
+                        const trailer = prompt("Edit trailer embed URL (optional):", p.trailer || "");
+                        if (trailer === null) return;
+                        const category = prompt("Category: pc | mobile | emulators | funny", p.category || "pc");
+                        if (category === null) return;
+                        const cat = ["pc", "mobile", "emulators", "funny"].includes((category || "").trim().toLowerCase())
+                            ? category.trim().toLowerCase() : (p.category || "pc");
+                        const updated = {
+                            title: title.trim() || p.title,
+                            description: description.trim() || p.description,
+                            size: (size || "").trim(),
+                            link: link.trim() || p.link,
+                            trailer: (trailer || "").trim() || null,
+                            category: cat
+                        };
+                        if (isDefault && id) {
+                            productOverrides[id] = { ...(productOverrides[id] || {}), ...updated };
+                            saveJSON(KEY_PRODUCT_OVERRIDES, productOverrides);
+                        } else {
+                            const i = parseInt(btn.dataset.i, 10);
+                            if (!isNaN(i) && i >= 0 && customProducts[i]) {
+                                customProducts[i] = { ...customProducts[i], ...updated };
+                            } else {
+                                const idx = customProducts.findIndex(c => c.id === id);
+                                if (idx >= 0) customProducts[idx] = { ...customProducts[idx], ...updated };
+                            }
+                            saveJSON(KEY_PRODUCTS, customProducts);
+                        }
+                        renderAllGames();
+                        setAdminMsg("Game / product updated.");
+                    } else if (type === "tool") {
+                        const id = btn.dataset.id;
+                        const isDefault = btn.dataset.default === "true";
+                        let current;
+                        if (isDefault) {
+                            current = getActiveTools().find(t => t.id === id) || {};
+                        } else {
+                            current = customTools.find(t => t.id === id) || {};
+                        }
+                        const title = prompt("Edit title:", current.title || "");
+                        if (title === null) return;
+                        const description = prompt("Edit description:", current.description || "");
+                        if (description === null) return;
+                        const price = prompt("Edit main price (e.g. 200,000 TZS):", current.price || "");
+                        if (price === null) return;
+                        const priceNote = prompt("Edit extra price note (e.g. Copy: 150,000 TZS) — leave empty if none:", current.priceNote || "");
+                        if (priceNote === null) return;
+                        const image = prompt("Edit image URL:", current.image || "");
+                        if (image === null) return;
+                        const category = prompt("Category: gamepads | consoles", current.category || "gamepads");
+                        if (category === null) return;
+                        const cat = ["gamepads", "consoles"].includes((category || "").trim().toLowerCase())
+                            ? category.trim().toLowerCase() : (current.category || "gamepads");
+                        const patch = {
+                            title: title.trim() || current.title,
+                            description: description.trim() || current.description,
+                            price: price.trim() || current.price,
+                            priceNote: (priceNote || "").trim(),
+                            image: (image || "").trim() || current.image,
+                            category: cat
+                        };
+                        if (isDefault) {
+                            toolOverrides[id] = { ...(toolOverrides[id] || {}), ...patch };
+                            saveJSON(KEY_TOOL_OVERRIDES, toolOverrides);
+                        } else {
+                            const idx = customTools.findIndex(t => t.id === id);
+                            if (idx >= 0) {
+                                customTools[idx] = { ...customTools[idx], ...patch };
+                                saveJSON(KEY_TOOLS, customTools);
+                            }
+                        }
+                        renderTools();
+                        setAdminMsg("Tool updated.");
+                    } else if (type === "post") {
+                        const i = parseInt(btn.dataset.i, 10);
+                        const p = posts[i];
+                        const title = prompt("Edit title:", p.title);
+                        if (title === null) return;
+                        const description = prompt("Edit description:", p.description || "");
+                        if (description === null) return;
+                        const link = prompt("Edit URL:", p.link);
+                        if (link === null) return;
+                        posts[i] = { ...p, title: title.trim() || p.title, description: (description || "").trim(), link: link.trim() || p.link };
+                        saveJSON(KEY_POSTS, posts);
+                        renderPostsSection();
+                        setAdminMsg("Post / link updated.");
+                    }
+                    renderAdminLists();
+                });
+            });
+        }
+
+        function renderViewsList() {
+            const statsEl = document.getElementById("viewsStats");
+            const listEl = document.getElementById("listViews");
+            if (!statsEl || !listEl) return;
+            const totalVisits = viewsLog.reduce((s, v) => s + (v.count || 1), 0);
+            const unique = viewsLog.length;
+            statsEl.innerHTML = `<strong>Total visits:</strong> ${totalVisits} &nbsp;|&nbsp; <strong>Unique IPs:</strong> ${unique}`;
+            if (!viewsLog.length) {
+                listEl.innerHTML = "<p style='color:#666;font-size:0.9rem;'>No visitors logged yet on this browser.</p>";
+                return;
+            }
+            const sorted = [...viewsLog].sort((a, b) => (b.last || 0) - (a.last || 0));
+            listEl.innerHTML = "<h4>Visitor IPs</h4>" + sorted.map(v => {
+                const time = v.last ? new Date(v.last).toLocaleString() : "—";
+                return `<div class="admin-list-item"><span><code style="color:#00f0ff">${escapeHtml(v.ip)}</code> — ${v.count || 1} visit(s) — last: ${escapeHtml(time)}</span></div>`;
+            }).join("");
+        }
+
+        // Track visitor IP (best-effort on static site)
+        async function trackVisitor() {
+            try {
+                const res = await fetch("https://api.ipify.org?format=json");
+                const data = await res.json();
+                const ip = data.ip || "unknown";
+                const now = Date.now();
+                let entry = viewsLog.find(v => v.ip === ip);
+                if (entry) {
+                    entry.count = (entry.count || 1) + 1;
+                    entry.last = now;
+                } else {
+                    viewsLog.push({ ip, count: 1, first: now, last: now });
+                }
+                // keep last 200 IPs
+                if (viewsLog.length > 200) viewsLog = viewsLog.slice(-200);
+                saveJSON(KEY_VIEWS, viewsLog);
+            } catch (e) {
+                // offline or blocked — ignore
+            }
+        }
+        trackVisitor();
+
+        function setAdminMsg(msg) {
+            document.getElementById("adminMessage").textContent = msg || "";
+        }
+
+        const searchInput = document.getElementById("searchInput");
+        function performSearch() {
+            const query = (searchInput.value || "").trim().toLowerCase();
+            const map = [
+                { id: "pc-games-container", no: "pc-no-results" },
+                { id: "mobile-games-container", no: "mobile-no-results" },
+                { id: "emulators-container", no: "emulators-no-results" },
+                { id: "funny-games-container", no: "funny-no-results" }
+            ];
+            map.forEach(({ id, no }) => {
+                const container = document.getElementById(id);
+                const cards = container.querySelectorAll(".game-card");
+                let visible = 0;
+                cards.forEach(card => {
+                    const t = card.dataset.title || "";
+                    const d = card.dataset.description || "";
+                    const match = !query || t.includes(query) || d.includes(query);
+                    card.classList.toggle("hidden-by-search", !match);
+                    if (match) visible++;
+                });
+                const noEl = document.getElementById(no);
+                if (noEl) noEl.classList.toggle("show", !!query && visible === 0);
+            });
+        }
+        searchInput.addEventListener("input", performSearch);
+
+        const adminLoginBtn = document.getElementById("adminLoginBtn");
+        const adminStatus = document.getElementById("adminStatus");
+        const adminPanel = document.getElementById("admin-panel");
+        const loginModal = document.getElementById("loginModal");
+        const adminPasswordInput = document.getElementById("adminPassword");
+        const loginError = document.getElementById("loginError");
+
+        function getFails() { return parseInt(localStorage.getItem(KEY_FAILS) || "0", 10); }
+        function setFails(n) { localStorage.setItem(KEY_FAILS, String(n)); }
+        function isLocked() { return getFails() >= MAX_FAILED_ATTEMPTS; }
+        function isLoggedIn() { return localStorage.getItem(KEY_LOGGED) === "true"; }
+        function setLoggedIn(v) {
+            if (v) localStorage.setItem(KEY_LOGGED, "true");
+            else localStorage.removeItem(KEY_LOGGED);
+        }
+
+        function updateAdminUI() {
+            if (isLocked()) {
+                adminLoginBtn.classList.add("hidden");
+                adminStatus.style.display = "none";
+                adminPanel.classList.remove("visible");
+                return;
+            }
+            if (isLoggedIn()) {
+                adminLoginBtn.classList.add("hidden");
+                adminStatus.style.display = "block";
+                adminPanel.classList.add("visible");
+                renderAdminLists();
+                fillBotForm();
+            } else {
+                adminLoginBtn.classList.remove("hidden");
+                adminStatus.style.display = "none";
+                adminPanel.classList.remove("visible");
+            }
+        }
+
+        function openLogin() {
+            if (isLocked()) return;
+            loginError.textContent = "";
+            adminPasswordInput.value = "";
+            loginModal.classList.add("show");
+            setTimeout(() => adminPasswordInput.focus(), 50);
+        }
+        function closeLogin() {
+            loginModal.classList.remove("show");
+            adminPasswordInput.value = "";
+            loginError.textContent = "";
+        }
+        function fillBotForm() {
+            const n = document.getElementById("botName");
+            const w = document.getElementById("botWelcome");
+            const i = document.getElementById("botInstructions");
+            if (n) n.value = botSettings.name || defaultBot.name;
+            if (w) w.value = botSettings.welcome || defaultBot.welcome;
+            if (i) i.value = botSettings.instructions || defaultBot.instructions;
+        }
+
+        function attemptLogin() {
+            if (adminPasswordInput.value === ADMIN_PASSWORD) {
+                setLoggedIn(true);
+                setFails(0);
+                closeLogin();
+                updateAdminUI();
+                fillBotForm();
+                setAdminMsg("Welcome, Admin. Full control over all sections + Bot Coach.");
+            } else {
+                const fails = getFails() + 1;
+                setFails(fails);
+                const left = MAX_FAILED_ATTEMPTS - fails;
+                if (fails >= MAX_FAILED_ATTEMPTS) {
+                    loginError.textContent = "Too many failed attempts. Admin option removed on this browser.";
+                    setTimeout(() => { closeLogin(); updateAdminUI(); }, 1800);
+                } else {
+                    loginError.textContent = `Wrong password. ${left} attempt${left === 1 ? "" : "s"} left.`;
+                    adminPasswordInput.value = "";
+                    adminPasswordInput.focus();
+                }
+            }
+        }
+
+        adminLoginBtn.addEventListener("click", openLogin);
+        document.getElementById("cancelLogin").addEventListener("click", closeLogin);
+        document.getElementById("submitLogin").addEventListener("click", attemptLogin);
+        adminPasswordInput.addEventListener("keydown", e => { if (e.key === "Enter") attemptLogin(); });
+        loginModal.addEventListener("click", e => { if (e.target === loginModal) closeLogin(); });
+
+        document.getElementById("btnLogout").addEventListener("click", () => {
+            setLoggedIn(false);
+            updateAdminUI();
+            setAdminMsg("");
+        });
+        document.getElementById("btnClearSearch").addEventListener("click", () => {
+            searchInput.value = "";
+            performSearch();
+            setAdminMsg("Search cleared.");
+        });
+        document.getElementById("btnShowStats").addEventListener("click", () => {
+            setAdminMsg(`Stats: ${getAllProducts().length} games, ${getActiveTools().length} tools, ${announcements.length} announcements, ${posts.length} posts. Unique IPs: ${viewsLog.length}.`);
+        });
+
+        document.getElementById("btnRefreshViews")?.addEventListener("click", () => {
+            viewsLog = loadJSON(KEY_VIEWS, []);
+            renderViewsList();
+            setAdminMsg("Views refreshed.");
+        });
+        document.getElementById("btnClearViews")?.addEventListener("click", () => {
+            if (confirm("Clear all visitor IP logs on this browser?")) {
+                viewsLog = [];
+                saveJSON(KEY_VIEWS, viewsLog);
+                renderViewsList();
+                setAdminMsg("Visitor log cleared.");
+            }
+        });
+
+        document.querySelectorAll(".admin-tab").forEach(tab => {
+            tab.addEventListener("click", () => {
+                document.querySelectorAll(".admin-tab").forEach(t => t.classList.remove("active"));
+                document.querySelectorAll(".admin-tab-content").forEach(c => c.classList.remove("active"));
+                tab.classList.add("active");
+                document.getElementById("tab-" + tab.dataset.tab).classList.add("active");
+                if (tab.dataset.tab === "views") renderViewsList();
+            });
+        });
+
+        document.getElementById("formAnnouncement").addEventListener("submit", e => {
+            e.preventDefault();
+            const text = document.getElementById("annText").value.trim();
+            const link = document.getElementById("annLink").value.trim();
+            if (!text) return;
+            announcements.unshift({ text, link: link || null, date: new Date().toLocaleDateString() });
+            saveJSON(KEY_ANNOUNCEMENTS, announcements);
+            document.getElementById("annText").value = "";
+            document.getElementById("annLink").value = "";
+            renderAnnouncements();
+            renderAdminLists();
+            setAdminMsg("Announcement added.");
+        });
+
+        document.getElementById("formProduct").addEventListener("submit", e => {
+            e.preventDefault();
+            const title = document.getElementById("prodTitle").value.trim();
+            const description = document.getElementById("prodDesc").value.trim();
+            const size = document.getElementById("prodSize").value.trim();
+            const category = document.getElementById("prodCategory").value;
+            const link = document.getElementById("prodLink").value.trim();
+            const trailer = document.getElementById("prodTrailer").value.trim();
+            if (!title || !description || !link) return;
+            customProducts.unshift({
+                id: "custom-" + Date.now(),
+                title, description, size, category, link,
+                trailer: trailer || null
+            });
+            saveJSON(KEY_PRODUCTS, customProducts);
+            document.getElementById("formProduct").reset();
+            renderAllGames();
+            renderAdminLists();
+            setAdminMsg("Game / product added.");
+        });
+
+        document.getElementById("formTool").addEventListener("submit", e => {
+            e.preventDefault();
+            const title = document.getElementById("toolTitle").value.trim();
+            const description = document.getElementById("toolDesc").value.trim();
+            const price = document.getElementById("toolPrice").value.trim();
+            const priceNote = document.getElementById("toolPriceNote").value.trim();
+            const category = document.getElementById("toolCategory").value;
+            const image = document.getElementById("toolImage").value.trim();
+            if (!title || !description || !price || !image) return;
+            customTools.unshift({
+                id: "tool-" + Date.now(),
+                title, description, price, priceNote, category, image
+            });
+            saveJSON(KEY_TOOLS, customTools);
+            document.getElementById("formTool").reset();
+            renderTools();
+            renderAdminLists();
+            setAdminMsg("Game Tool product added to " + (category === "gamepads" ? "Game Pads" : "Consoles") + ".");
+        });
+
+        document.getElementById("formPost").addEventListener("submit", e => {
+            e.preventDefault();
+            const title = document.getElementById("postTitle").value.trim();
+            const description = document.getElementById("postDesc").value.trim();
+            const link = document.getElementById("postLink").value.trim();
+            if (!title || !link) return;
+            posts.unshift({ title, description, link, id: "post-" + Date.now() });
+            saveJSON(KEY_POSTS, posts);
+            document.getElementById("formPost").reset();
+            renderPostsSection();
+            renderAdminLists();
+            setAdminMsg("Post / link added.");
+        });
+
+        document.getElementById("formBot")?.addEventListener("submit", e => {
+            e.preventDefault();
+            botSettings = {
+                name: (document.getElementById("botName").value.trim() || defaultBot.name),
+                welcome: (document.getElementById("botWelcome").value.trim() || defaultBot.welcome),
+                instructions: (document.getElementById("botInstructions").value.trim() || defaultBot.instructions)
+            };
+            saveBotSettings();
+            const headerName = document.querySelector("#chat-page .chat-header h2");
+            if (headerName) headerName.textContent = botSettings.name + " – Game Coach";
+            setAdminMsg("Bot settings saved. Name: " + botSettings.name);
+        });
+
+
+        // Ensure password fields always mask (•) while typing
+        ["adminPassword"].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.setAttribute("type", "password");
+                el.style.webkitTextSecurity = "disc";
+            }
+        });
+
+        renderAllGames();
+        renderTools();
+        renderAnnouncements();
+        renderPostsSection();
+        updateAdminUI();
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener("click", function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute("href"));
+                if (target) target.scrollIntoView({ behavior: "smooth" });
+            });
+        });
+        const sections = document.querySelectorAll("section");
+        const navLinks = document.querySelectorAll(".nav-link");
+        window.addEventListener("scroll", () => {
+            let current = "";
+            sections.forEach(section => {
+                if (scrollY >= section.offsetTop - 120) current = section.getAttribute("id");
+            });
+            navLinks.forEach(link => {
+                link.classList.remove("active");
+                if (link.getAttribute("href") === "#" + current) link.classList.add("active");
+            });
+        });
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add("visible");
+            });
+        }, { threshold: 0.15 });
+        sections.forEach(section => observer.observe(section));
+
+        // ===== Game Coach bot (🎮) =====
+        const chatBox = document.getElementById("chatBox");
+        const chatInput = document.getElementById("chatInput");
+        const chatPage = document.getElementById("chat-page");
+        let coachMsgCount = 0;
+
+        function escapeChat(s) {
+            return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+        }
+        function linkifyChat(text) {
+            return escapeChat(text).replace(/(https?:\/\/[^\s<]+)/g, '<a class="wa-link" href="$1" target="_blank" rel="noopener">$1</a>');
+        }
+        function addChatMsg(text, who) {
+            const div = document.createElement("div");
+            div.className = "cmsg " + who;
+            const label = who === "bot" ? (botSettings.name || "Coach Nova") : "You";
+            const body = who === "bot" ? linkifyChat(text) : escapeChat(text);
+            div.innerHTML = `<div class="who">${label}</div>${body}`;
+            chatBox.appendChild(div);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function findCatalogItem(q, preferTools) {
+            const ql = (q || "").toLowerCase();
+            const tools = (typeof getActiveTools === "function" ? getActiveTools() : defaultTools) || [];
+            const games = (typeof getAllProducts === "function" ? getAllProducts() : []) || [];
+            const score = (item) => {
+                const t = ((item.title || "") + " " + (item.description || "") + " " + (item.category || "")).toLowerCase();
+                let s = 0;
+                ql.split(/\s+/).forEach(w => {
+                    if (w.length < 3) return;
+                    if (t.includes(w)) s += w.length > 5 ? 3 : 2;
+                });
+                if (/dualsense|ps5 pad|ps5 controller/.test(ql) && /dualsense/i.test(t)) s += 10;
+                if (/dualshock\s*4|ps4 pad|ps4 controller/.test(ql) && /dualshock 4|ds4/i.test(t)) s += 10;
+                if (/dualshock\s*3|ps3 pad/.test(ql) && /dualshock 3|ps3/i.test(t)) s += 10;
+                if (/phone|android|pc pad|emulator pad/.test(ql) && /phone|android|pc & phone/i.test(t)) s += 10;
+                if (/\bps5\b|playstation 5/.test(ql) && /playstation 5|\bps5\b/i.test(t) && /console|playstation 5/i.test(t)) s += 8;
+                if (/\bps4\b|playstation 4/.test(ql) && /playstation 4|\bps4\b/i.test(t)) s += 8;
+                if (/\bps3\b|playstation 3/.test(ql) && /playstation 3|\bps3\b/i.test(t)) s += 8;
+                if (/gta|grand theft/.test(ql) && /gta|grand theft/i.test(t)) s += 10;
+                if (/resident|re5/.test(ql) && /resident/i.test(t)) s += 10;
+                if (/just cause/.test(ql) && /just cause/i.test(t)) s += 10;
+                if (/spider/.test(ql) && /spider/i.test(t)) s += 10;
+                if (/mortal|shaolin|kombat/.test(ql) && /mortal|shaolin/i.test(t)) s += 10;
+                if (/007|bond|quantum/.test(ql) && /007|quantum|bond/i.test(t)) s += 10;
+                if (/fifa|efootball|football|pes/.test(ql) && /fifa|football/i.test(t)) s += 9;
+                if (/ppsspp|psp/.test(ql) && /ppsspp|psp/i.test(t)) s += 9;
+                if (/emulator/.test(ql) && /emulator/i.test(t)) s += 8;
+                return s;
+            };
+            const pool = preferTools ? tools.concat(games) : games.concat(tools);
+            let best = null, bestS = 0;
+            pool.forEach(item => {
+                const s = score(item);
+                if (s > bestS) { bestS = s; best = item; }
+            });
+            if (bestS >= 2) return best;
+            // Intent fallbacks
+            if (/controller|gamepad|pad\b|dualsense|dualshock/.test(ql)) {
+                return tools.find(t => /dualsense/i.test(t.title)) || tools.find(t => /controller|pad|dual/i.test(t.title || "")) || null;
+            }
+            if (/\bps5\b/.test(ql)) return tools.find(t => /playstation 5|\bps5\b/i.test(t.title || "")) || null;
+            if (/\bps4\b/.test(ql)) return tools.find(t => /playstation 4|\bps4\b/i.test(t.title || "")) || null;
+            if (/\bps3\b/.test(ql)) return tools.find(t => /playstation 3|\bps3\b/i.test(t.title || "")) || null;
+            if (/console/.test(ql)) return tools.find(t => t.category === "consoles") || null;
+            if (/fifa|efootball|football/.test(ql)) {
+                return games.find(g => /fifa/i.test(g.title || "")) || tools.find(t => /phone|controller|pad/i.test(t.title || "")) || null;
+            }
+            return null;
+        }
+
+        function formatPick(item) {
+            if (!item) return "";
+            const price = item.price ? " — " + item.price : (item.size ? " (" + item.size + ")" : "");
+            const note = item.priceNote ? " · " + item.priceNote : "";
+            const cat = item.category ? " [" + item.category + "]" : "";
+            return "\n\nGames Nation pick: " + item.title + cat + price + note + "\nOrder / help: " + WHATSAPP;
+        }
+
+        function promoteProduct(q, force) {
+            const hit = findCatalogItem(q, true);
+            if (!hit && !force) return "";
+            if (!hit) {
+                const tools = (typeof getActiveTools === "function" ? getActiveTools() : defaultTools) || [];
+                const fallback = tools[0];
+                return fallback ? formatPick(fallback) : "\n\nBrowse Game Tools on the site or order via WhatsApp: " + WHATSAPP;
+            }
+            return formatPick(hit);
+        }
+
+        function coachReply(userText) {
+            const q = userText.toLowerCase().trim();
+            const name = botSettings.name || "Coach Nova";
+            let reply = "";
+            let wantPromo = false;
+
+            // Admin FAQ first: "keyword: answer" (skip long instruction lines without useful answers)
+            const lines = (botSettings.instructions || "").split("\n").map(l => l.trim()).filter(Boolean);
+            for (const line of lines) {
+                if (!line.includes(":")) continue;
+                const idx = line.indexOf(":");
+                const key = line.slice(0, idx).trim().toLowerCase();
+                const val = line.slice(idx + 1).trim();
+                if (key.length >= 2 && key.length <= 40 && val.length > 2 && q.includes(key)) {
+                    reply = val;
+                    break;
+                }
+            }
+
+            if (!reply) {
+                if (/hello|hi\b|hey|habari|mambo|salama/i.test(q)) {
+                    reply = "Hey! I'm " + name + " — Games Nation coach.\nFast help on eFootball tactics, our PC/Mobile games, pads & consoles, and WhatsApp orders.\nWhat do you need: tactics, a game, or hardware?";
+                } else if (/efootball|e\s*football|\bpes\b|dream team|myclub/i.test(q)) {
+                    reply = "eFootball — efficient plan:\n1) Lock one formation (4-2-1-3 / 4-3-3 Holding / 4-2-3-1) for 20+ matches.\n2) Defend: jockey (L2/LT) + contain; don't only sprint-tackle.\n3) Attack: midfield combinations > spam through balls.\n4) Finish: timed shot; finesse (R1/RB) from angle; 1v1 low near post.\n5) Subs at 60–70' for CM/WB stamina.\n6) Ranked: warm up, stable Wi‑Fi, stay calm after conceding.\nPlatform (mobile/console) + rank = more specific advice.";
+                    wantPromo = /mobile|android|pad|controller/.test(q);
+                } else if (/formation|tactic|4-3-3|4-2-3-1|4-2-1-3|pressing|counter attack|counter-attack/i.test(q)) {
+                    reply = "Tactics (accurate):\n• Possession: 4-3-3 Holding, short pass, slightly higher line if CBs are fast.\n• Counter: 4-2-3-1 or 5-2-3, deeper line, explosive wingers.\n• High press: only with fresh midfield — else you get countered.\nBuild around playstyles (Goal Poacher, Creative Playmaker, Anchor, Destroyer).";
+                } else if (/skill move|skills\b|rainbow|elastico|finishing|shooting|dribbling|1v1/i.test(q)) {
+                    reply = "Skills & finishing:\n• Skills are tools, not spam — feint + explode into space near the box.\n• Shot timing > max power every time.\n• Finesse (R1/RB) from wide angles; power when the keeper is off balance.\n• First touch away from the defender beats most skill chains.";
+                } else if (/defend|defending|manual defend|jockey|tackle/i.test(q)) {
+                    reply = "Defending checklist:\n1) Jockey (L2/LT) to mirror the attacker.\n2) Second man press carefully — don't drag CBs out.\n3) Cut the short pass first.\n4) Slide only when the ball is clear or last resort.\n5) Reset shape after every clearance.";
+                } else if (/lag|ping|delay|connection|wifi|wi-fi/i.test(q)) {
+                    reply = "Connection tips:\n• Close background downloads & apps.\n• Prefer 5 GHz Wi‑Fi near the router; avoid unstable mobile data for ranked.\n• Wired/PC is more consistent when possible.\n• Lower non-essential network features in settings.";
+                } else if (/dualsense|dualshock|controller|gamepad|\bpad\b/i.test(q)) {
+                    reply = "Controllers we sell (Game Tools):\n• PS5 DualSense — Original 200,000 TZS · Copy 150,000 TZS\n• PS4 DualShock 4 — 34,000 TZS\n• PS3 DualShock 3 — 15,000–20,000 TZS\n• PC & Phone pad — 35,000 TZS (Android / PC / emulators)\nTell me your device (PS5 / PS4 / phone) and budget.";
+                    wantPromo = true;
+                } else if (/\bps5\b|playstation 5/i.test(q)) {
+                    reply = "PS5 console is listed in Game Tools at about 1,300,000 TZS (confirm stock on WhatsApp). Best pair: DualSense for adaptive triggers.\nWant pad only or full console?";
+                    wantPromo = true;
+                } else if (/\bps4\b|playstation 4/i.test(q)) {
+                    reply = "PS4 — best value for many players: huge library, about 500,000–600,000 TZS in Game Tools. Pair with DualShock 4 (34,000 TZS).\nConfirm live stock on WhatsApp before paying.";
+                    wantPromo = true;
+                } else if (/\bps3\b|playstation 3/i.test(q)) {
+                    reply = "PS3 — solid for classics/budget, about 350,000 TZS. DualShock 3 pads 15,000–20,000 TZS.\nOrder via WhatsApp for delivery help.";
+                    wantPromo = true;
+                } else if (/console/i.test(q)) {
+                    reply = "Consoles in stock on this site:\n• PS5 ≈ 1,300,000 TZS\n• PS4 ≈ 500,000–600,000 TZS (value pick)\n• PS3 ≈ 350,000 TZS (budget/classics)\nSay your budget and I'll point the best match.";
+                    wantPromo = true;
+                } else if (/gta|grand theft/i.test(q)) {
+                    reply = "GTA V is under PC Games — large open-world action (≈ 45 GB). Open the PC Games section or ask WhatsApp for the order/download path we support.";
+                    wantPromo = true;
+                } else if (/resident|re5/i.test(q)) {
+                    reply = "Resident Evil 5 is under PC Games — co-op survival horror classic (≈ 7.5 GB). Trailer is on the card; order/help via WhatsApp if needed.";
+                    wantPromo = true;
+                } else if (/just cause/i.test(q)) {
+                    reply = "Just Cause is under PC Games — open-world action with big set pieces (≈ 4.5 GB). See the PC section or WhatsApp to proceed.";
+                    wantPromo = true;
+                } else if (/spider/i.test(q)) {
+                    reply = "The Amazing Spider-Man is under Mobile Games — open-world superhero action on phone (≈ 1.5 GB). A phone/PC controller (35,000 TZS) improves control a lot.";
+                    wantPromo = true;
+                } else if (/mortal|shaolin|kombat/i.test(q)) {
+                    reply = "Mortal Kombat: Shaolin Monks is under Mobile Games — beat 'em up action (≈ 1.2 GB). Pair with a mobile gamepad for better combos.";
+                    wantPromo = true;
+                } else if (/007|quantum|bond/i.test(q)) {
+                    reply = "007: Quantum of Solace is under Mobile Games — Bond action based on the film (≈ 800 MB). Available in the Mobile section.";
+                    wantPromo = true;
+                } else if (/fifa|offline football/i.test(q)) {
+                    reply = "FIFA 2026 Offline is under Mobile Games — offline football on Android (≈ 1.8 GB). For better play, use our PC & Phone controller (35,000 TZS).\nFor online eFootball tactics, ask me formation/defend/finish.";
+                    wantPromo = true;
+                } else if (/ppsspp|psp games/i.test(q)) {
+                    reply = "100 PPSSPP Games is under Mobile Games — large PSP library for PPSSPP. Best with a phone/PC gamepad from Game Tools.";
+                    wantPromo = true;
+                } else if (/emulator|retro/i.test(q)) {
+                    reply = "Emulators Collection is in the Emulators section — play classic console games on your device. Recommended: PC & Phone Controllers (35,000 TZS) for accurate inputs.";
+                    wantPromo = true;
+                } else if (/funny games|free online/i.test(q)) {
+                    reply = "Funny Games section has free online games — quick sessions, no heavy install. Open Funny Games on the site to play.";
+                } else if (/price|bei|cost|order|buy|nunua|deliver|stock/i.test(q)) {
+                    reply = "To order any listed game, pad, or console: use WhatsApp — we help with delivery.\n" + WHATSAPP + "\nOr tap Order on Game Tools / game cards.\nTell me the product name or your budget.";
+                    wantPromo = true;
+                } else if (/rank|division|improve|win more|tips for ranked/i.test(q)) {
+                    reply = "Ranked improvement (short):\n1) Warm-up 5–10 min.\n2) One formation only.\n3) Review 1 replay per loss (how you conceded).\n4) Set-piece routine (corner + FK).\n5) Stable network before boosting graphics.";
+                } else if (/whatsapp|wasap|contact|tiktok/i.test(q)) {
+                    reply = "Contact Games Nation:\nWhatsApp: " + WHATSAPP + "\nTikTok: @babayagah007\nOrders & stock confirmation → WhatsApp.";
+                } else if (/thank|asante|thanks|merci/i.test(q)) {
+                    reply = "Anytime. Ask for tactics, a catalog game, or a pad/console anytime. GG.";
+                } else {
+                    reply = "I can help with:\n• eFootball (tactics / defend / finish / lag)\n• Site games: GTA V, RE5, Just Cause, Spider-Man, MK Shaolin, 007, FIFA offline, PPSSPP pack\n• Hardware: DualSense, DS4, PS3 pad, phone pad, PS5/PS4/PS3\nAsk a specific title or goal (e.g. \"eFootball defend\" or \"DualSense price\").";
+                    if (coachMsgCount >= 1) wantPromo = true;
+                }
+            }
+
+            // Middleman: promo when intent matches or after 2 messages (once, not spam)
+            const hasPick = /Games Nation pick:|Order \/ help:|WhatsApp:/i.test(reply);
+            if (wantPromo && !hasPick) {
+                reply += promoteProduct(q, true);
+            } else if (coachMsgCount >= 2 && !hasPick && /price|buy|order|pad|console|ps5|ps4|controller|game/i.test(q)) {
+                reply += promoteProduct(q, false);
+            } else if (coachMsgCount >= 2 && !hasPick && !/wa\.me|whatsapp/i.test(reply)) {
+                reply += "\n\nNeed to order stock? WhatsApp: " + WHATSAPP;
+            }
+            return reply.replace(/\*\*/g, "");
+        }
+
+        function openCoach() {
+            document.querySelectorAll(".hero, nav, section, #admin-panel, .admin-status-float").forEach(el => {
+                if (el) el.dataset.prevDisplay = el.style.display;
+                if (el) el.style.display = "none";
+            });
+            chatPage.classList.add("visible");
+            const floatBtn = document.getElementById("botFloatBtn");
+            if (floatBtn) floatBtn.classList.add("hidden-chat");
+            const headerName = document.querySelector("#chat-page .chat-header h2");
+            if (headerName) headerName.textContent = (botSettings.name || "Coach Nova") + " – Game Coach";
+            coachMsgCount = 0;
+            chatBox.innerHTML = "";
+            addChatMsg(botSettings.welcome || defaultBot.welcome, "bot");
+            chatInput.focus();
+        }
+
+        function closeCoach() {
+            chatPage.classList.remove("visible");
+            document.querySelectorAll(".hero, nav, section").forEach(el => {
+                if (el) el.style.display = "";
+            });
+            const adminPanel = document.getElementById("admin-panel");
+            if (adminPanel && isLoggedIn()) adminPanel.style.display = "";
+            const status = document.getElementById("adminStatus");
+            if (status && isLoggedIn()) status.style.display = "block";
+            const floatBtn = document.getElementById("botFloatBtn");
+            if (floatBtn) floatBtn.classList.remove("hidden-chat");
+        }
+
+        document.getElementById("navCoach")?.addEventListener("click", e => { e.preventDefault(); openCoach(); });
+        document.getElementById("backFromChat")?.addEventListener("click", closeCoach);
+        document.getElementById("sendChat")?.addEventListener("click", sendCoach);
+        chatInput?.addEventListener("keydown", e => { if (e.key === "Enter") sendCoach(); });
+
+        function sendCoach() {
+            const text = (chatInput.value || "").trim();
+            if (!text) return;
+            coachMsgCount += 1;
+            addChatMsg(text, "user");
+            chatInput.value = "";
+            setTimeout(() => addChatMsg(coachReply(text), "bot"), 350 + Math.random() * 400);
+        }
+
+        (function initCoachDrag() {
+            const btn = document.getElementById("botFloatBtn");
+            if (!btn) return;
+            const POS_KEY = "gamesnation_coach_pos";
+            const THRESHOLD = 6;
+            let pid = null, dragging = false, moved = false, startX = 0, startY = 0, offX = 0, offY = 0;
+            const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+            function place(left, top) {
+                const w = btn.offsetWidth || 56, h = btn.offsetHeight || 56;
+                left = clamp(left, 4, window.innerWidth - w - 4);
+                top = clamp(top, 4, window.innerHeight - h - 4);
+                btn.style.left = left + "px";
+                btn.style.top = top + "px";
+                btn.style.right = "auto";
+                btn.style.bottom = "auto";
+                return { left, top };
+            }
+            try {
+                const s = JSON.parse(localStorage.getItem(POS_KEY) || "null");
+                if (s && typeof s.left === "number") place(s.left, s.top);
+            } catch (_) {}
+            function onDown(e) {
+                if (e.pointerType === "mouse" && e.button !== 0) return;
+                if (pid !== null) return;
+                pid = e.pointerId; dragging = true; moved = false;
+                const r = btn.getBoundingClientRect();
+                startX = e.clientX; startY = e.clientY; offX = e.clientX - r.left; offY = e.clientY - r.top;
+                place(r.left, r.top); btn.classList.add("dragging");
+                try { btn.setPointerCapture(e.pointerId); } catch (_) {}
+                e.preventDefault();
+            }
+            function onMove(e) {
+                if (!dragging || e.pointerId !== pid) return;
+                if (!moved && (Math.abs(e.clientX - startX) > THRESHOLD || Math.abs(e.clientY - startY) > THRESHOLD)) moved = true;
+                place(e.clientX - offX, e.clientY - offY); e.preventDefault();
+            }
+            function onUp(e) {
+                if (!dragging || (e && e.pointerId !== pid)) return;
+                dragging = false; btn.classList.remove("dragging");
+                try { if (pid !== null) btn.releasePointerCapture(pid); } catch (_) {}
+                const r = btn.getBoundingClientRect();
+                try { localStorage.setItem(POS_KEY, JSON.stringify(place(r.left, r.top))); } catch (_) {}
+                if (!moved) openCoach();
+                pid = null; moved = false;
+            }
+            btn.addEventListener("pointerdown", onDown);
+            btn.addEventListener("pointermove", onMove);
+            btn.addEventListener("pointerup", onUp);
+            btn.addEventListener("pointercancel", onUp);
+            btn.addEventListener("contextmenu", e => e.preventDefault());
+            window.addEventListener("resize", () => { const r = btn.getBoundingClientRect(); place(r.left, r.top); });
+        })();
+    </script>
+</body>
+</html>
