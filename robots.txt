@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://rahimumiraji1-dev.github.io/GamezN.com/sitemap.xml
